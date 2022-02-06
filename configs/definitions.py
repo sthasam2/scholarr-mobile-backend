@@ -1,0 +1,6 @@
+from .settings.settings import DEBUG, TIME_ZONE, BASE_DIR, AUTH_USER_MODEL
+
+DEVELOPMENT = True
+
+if not DEVELOPMENT:
+    PRODUCTION = not DEVELOPMENT
