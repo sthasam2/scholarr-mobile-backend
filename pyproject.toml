@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scholarr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Backend for Scholarr"
 authors = ["Sambeg Shrestha <sthasam2@gmail.com>"]
 license = "GNU v.3."

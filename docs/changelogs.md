@@ -1,5 +1,13 @@
 # Changelogs
 
+## v.0.1.1: Database Modelling
+
+17 Feb, 2022
+
+1. Modelled database for Class-groups, Classroom, Class-contents, Schedules
+2. Added documentations
+3. Bug fixes
+
 ## v.0.1.0: Initial setup, Authentication, and Profile
 
 6 Feb, 2022
