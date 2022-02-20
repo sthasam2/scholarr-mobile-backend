@@ -1,10 +1,10 @@
 # Personal
 .env
-.envrc
+*.envrc
 db.sqlite3
 .venv/
 .vscode/
-migrations/
+# migrations/
 staticfiles/
 
 # Byte-compiled / optimized / DLL files
