@@ -12,10 +12,7 @@ from apps.core.exceptions import (
 )
 from apps.core.helpers import create_200, create_400, create_500
 from apps.core.permissions import IsProfileOwner, IsProfilePasswordMatching
-from apps.profiles.utils import (
-    check_fields,
-    get_profile_from_url_username_or_raise,
-)
+from apps.profiles.utils import check_fields, get_profile_from_url_username_or_raise
 
 from .serializers import (
     ChangePrivateProfileSerializer,

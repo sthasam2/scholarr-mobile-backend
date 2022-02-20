@@ -1,5 +1,5 @@
-import time
 import os
+import time
 from pathlib import Path
 
 import pandas as pd
@@ -7,8 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 
-
-module_dir=os.path.dirname(__file__)  # get current directory
+module_dir = os.path.dirname(__file__)  # get current directory
 
 
 class SentimentAnalysis:

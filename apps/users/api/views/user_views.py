@@ -1,10 +1,7 @@
 # from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,12 +14,7 @@ from apps.core.exceptions import (
     UnmatchedFieldsError,
     UrlParameterError,
 )
-from apps.core.helpers import (
-    RequestFieldsChecker,
-    create_200,
-    create_400,
-    create_500,
-)
+from apps.core.helpers import RequestFieldsChecker, create_200, create_400, create_500
 from apps.core.permissions import IsOwner, IsPasswordMatching
 from apps.users.api.serializers import (
     ActivateSerializer,

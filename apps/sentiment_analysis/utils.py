@@ -1,8 +1,8 @@
 import os
 import time
 
-from joblib import load
 import pandas as pd
+from joblib import load
 from textblob import TextBlob
 
 # Load trained models from dumps

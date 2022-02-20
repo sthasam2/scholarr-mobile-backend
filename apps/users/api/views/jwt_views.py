@@ -1,18 +1,19 @@
 # from drf_yasg import openapi
 # from drf_yasg.utils import swagger_auto_schema
-from apps.core.exceptions import CustomAuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_401_UNAUTHORIZED,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.exceptions import (
-    TokenError,
-    InvalidToken,
     AuthenticationFailed,
+    InvalidToken,
+    TokenError,
 )
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from apps.core.exceptions import CustomAuthenticationFailed
 from apps.core.helpers import create_400, create_500
 
 from ..schemas import LoginAcceptedResponseSchema, Response400Schema, Response500Schema

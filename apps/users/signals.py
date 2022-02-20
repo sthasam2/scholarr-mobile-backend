@@ -1,3 +1,4 @@
+from configs.definitions import DEBUG
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -5,7 +6,6 @@ from django.dispatch import receiver
 from apps.activities.models import UserActivity
 from apps.activities.utils import _create_activity
 from apps.profiles.models import Profile
-from configs.definitions import DEBUG
 
 from .models import CustomUser
 

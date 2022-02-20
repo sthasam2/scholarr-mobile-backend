@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.users.models import CustomUser
 
 # from apps.classrooms.models import Classroom

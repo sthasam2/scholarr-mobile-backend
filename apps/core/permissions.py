@@ -1,7 +1,6 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
-
 from apps.profiles.models import Profile
 from apps.users.models import CustomUser
 

@@ -1,8 +1,8 @@
 from django.db import models
 
-from apps.users.models import CustomUser
 from apps.classroom_contents.models import Classwork, Resource
 from apps.schedules.models import Schedule
+from apps.users.models import CustomUser
 
 
 class Classroom(models.Model):

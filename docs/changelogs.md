@@ -1,5 +1,13 @@
 # Changelogs
 
+## v.0.1.2: Heroku Deployment configs
+
+20 Feb, 2022
+
+1. Configured Heroku deployment
+2. Sorted and Beautified files
+3. Bug fixes
+
 ## v.0.1.1: Database Modelling
 
 17 Feb, 2022

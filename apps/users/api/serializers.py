@@ -1,10 +1,11 @@
 from django.db.models.fields import EmailField
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from apps.core.exceptions import CustomAuthenticationFailed
 from apps.core.helpers import create_400
+
 from ..models import CustomUser
 from ..utils import DbExistenceChecker
 

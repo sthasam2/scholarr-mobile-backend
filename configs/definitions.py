@@ -1,4 +1,4 @@
-from .settings.settings import DEBUG, TIME_ZONE, BASE_DIR, AUTH_USER_MODEL
+from .settings.settings import AUTH_USER_MODEL, BASE_DIR, DEBUG, TIME_ZONE
 
 DEVELOPMENT = True
 
