@@ -1,5 +1,12 @@
 # Changelogs
 
+## v.0.1.3: Replaced drf-yasg with drf-spectacular, Fixes
+
+20 Feb, 2022
+
+1. Relaplaced drf-yasg with drf-spectacular
+2. Deployment Bug fixes
+
 ## v.0.1.2: Heroku Deployment configs
 
 20 Feb, 2022

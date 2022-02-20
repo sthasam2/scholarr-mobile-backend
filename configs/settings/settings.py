@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
-import django
+import os
 
 from .utils import get_environ_variable
 
@@ -49,7 +49,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_yasg",
+    "drf_spectacular",
 ]
 
 LOCAL_APPS = [
@@ -151,6 +151,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATIC_URL = "static/"
 
 # Default primary key field type
@@ -173,6 +174,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 50,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 
@@ -200,3 +202,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5000",
 ]
+
+
+# DRF Spectacular
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Scholarr Mobile API",
+    "DESCRIPTION": "Backend for Scholarr Mobile",
+    # OTHER SETTINGS
+}
