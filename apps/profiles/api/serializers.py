@@ -40,12 +40,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         help_text="Contact number verified",
     )
     private = serializers.BooleanField(help_text="Profile Privacy")
-    # notifications
-    #  connections
-    followers_count = serializers.SerializerMethodField()
-    following_count = serializers.SerializerMethodField()
-    muted_count = serializers.SerializerMethodField()
-    blocked_count = serializers.SerializerMethodField()
 
     class Meta:
         abstract = True
@@ -69,10 +63,6 @@ class ProfileSerializer(serializers.ModelSerializer):
             "phone_verified",
             "email",
             "private",
-            "followers_count",
-            "following_count",
-            "muted_count",
-            "blocked_count",
         ]
 
 
@@ -100,10 +90,6 @@ class ProfileOwnerSerializer(ProfileSerializer):
             "phone_verified",
             "email",
             "private",
-            "followers_count",
-            "following_count",
-            "muted_count",
-            "blocked_count",
         ]
 
 
@@ -127,8 +113,6 @@ class ProfilePublicSerializer(ProfileSerializer):
             "phone",
             "phone_verified",
             "email",
-            "followers_count",
-            "following_count",
         ]
 
 

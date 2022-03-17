@@ -21,4 +21,5 @@ urlpatterns = [
     path("api/", include("apps.core.urls"), name="core"),
     path("api/auth/", include("apps.users.urls"), name="users"),
     path("api/profile/", include("apps.profiles.urls"), name="profiles"),
+    path("api/class_group/", include("apps.class_groups.urls"), name="class_groups"),
 ]

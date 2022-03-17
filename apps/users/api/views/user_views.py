@@ -1,21 +1,17 @@
-# from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.decorators import try_except_http_error_decorator
 from apps.core.exceptions import (
-    ExtraFieldsError,
-    MissingFieldsError,
     NoneExistenceError,
-    PreExistenceError,
     UnmatchedFieldsError,
     UrlParameterError,
 )
-from apps.core.helpers import RequestFieldsChecker, create_200, create_400, create_500
-from apps.core.permissions import IsOwner, IsPasswordMatching
+from apps.core.helpers import RequestFieldsChecker, create_200
+from apps.core.permissions import IsAuthenticatedCustom, IsOwner, IsPasswordMatching
 from apps.users.api.serializers import (
     ActivateSerializer,
     ChangePasswordSerializer,
@@ -36,66 +32,42 @@ class UserDetailView(APIView):
     """ """
 
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticatedCustom, IsOwner]
 
+    @try_except_http_error_decorator
     def get(self, request, *args, **kwargs):
         """ """
 
-        try:
-            url_username = kwargs["username"]
-            if url_username:
-                try:
-                    checker = DbExistenceChecker()
-                    # check and get user
-                    user_instance = checker.check_return_user_existence(
-                        username=url_username
-                    )
-                    # check owner
-                    self.check_object_permissions(request, user_instance)
+        url_username = kwargs["username"]
+        if url_username:
+            checker = DbExistenceChecker()
 
-                    # serialize data
-                    serializer = UserSerializer(user_instance)
-
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-
-                except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-                    raise NoneExistenceError(
-                        url_username,
-                        create_400(
-                            400,
-                            "Non existence",
-                            f"Account with username `{url_username}` credentials does not exist!",
-                        ),
-                    )
-            else:
-                raise UrlParameterError(
-                    instance=request,
-                    message=create_400(
-                        status.HTTP_400_BAD_REQUEST,
-                        "Url parameter wrong",
-                        '"username" must be provided',
-                    ),
+            try:
+                # check and get user
+                user_instance = checker.check_return_user_existence(
+                    username=url_username
                 )
+                # check owner
+                self.check_object_permissions(request, user_instance)
 
-        except (UrlParameterError, NoneExistenceError) as error:
-            return Response(error.message, status=error.message["status"])
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
+                # serialize data
+                serializer = UserSerializer(user_instance)
 
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not fetch user profile for `{url_username}` due to an internal error.",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+                raise NoneExistenceError(
+                    status_code=400,
+                    message="Non existence",
+                    verbose=f"Account with username `{url_username}` credentials does not exist!",
+                    cause=request,
+                )
+        else:
+            raise UrlParameterError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Url parameter wrong",
+                cause=request,
+                verbose='"username" must be provided',
             )
 
 
@@ -108,121 +80,89 @@ class UpdateUserView(APIView):
     """ """
 
     serializer_class = UpdateUserSerializer
-    permission_classes = [IsAuthenticated, IsOwner, IsPasswordMatching]
+    permission_classes = [IsAuthenticatedCustom, IsOwner, IsPasswordMatching]
     field_options = ["username", "email", "active"]
     required_fields = ["current_password"]
     message = ""
 
+    @try_except_http_error_decorator
     def patch(self, request, *args, **kwargs):
         """ """
 
-        try:
-            url_username = kwargs["username"]
-            data = request.data
+        url_username = kwargs["username"]
+        data = request.data
 
-            # self.create_responses(request, *args, **kwargs)
+        # check fields
 
-            if url_username:
-                # check fields
-                RequestFieldsChecker().check_required_field_or_raise(
-                    data, self.required_fields
+        if url_username:
+
+            # check fields
+            r_checker = RequestFieldsChecker()
+            checker = DbExistenceChecker()
+
+            r_checker.check_required_field_or_raise(data, self.required_fields)
+            r_checker.check_at_least_one_field_or_raise(data, self.field_options)
+            r_checker.check_extra_fields_or_raise(
+                data, self.field_options, self.required_fields
+            )
+
+            # check user existence
+            try:
+                user_to_update = checker.check_return_user_existence(
+                    username=url_username
                 )
-                RequestFieldsChecker().check_at_least_one_field_or_raise(
-                    data, self.field_options
-                )
-                RequestFieldsChecker().check_extra_fields_or_raise(
-                    data, self.field_options, self.required_fields
-                )
-
-                # check user existence
-                try:
-                    user_to_update = DbExistenceChecker().check_return_user_existence(
-                        username=url_username
-                    )
-                    if user_to_update != request.user:
-                        raise PermissionDenied(
-                            code="Permission Denied",
-                            detail="Target account does not belong to authenticated user",
-                        )
-
-                except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-                    raise NoneExistenceError(
-                        url_username,
-                        create_400(
-                            400,
-                            "Non existence",
-                            f"Account with username `{url_username}` credentials does not exist!",
-                        ),
+                if user_to_update != request.user:
+                    raise PermissionDenied(
+                        code="Permission Denied",
+                        detail="Target account does not belong to authenticated user",
                     )
 
-                # update
-                # check object permissions
-                self.check_object_permissions(request, user_to_update)
+            except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+                raise NoneExistenceError(
+                    status_code=400,
+                    message="Non existence",
+                    verbose=f"Account with username `{url_username}` credentials does not exist!",
+                    cause=request,
+                )
 
-                serializer = self.serializer_class(data=data)
-                serializer.is_valid(raise_exception=True)
-                updated_user = serializer.update_user(user_to_update, **data)
+            # update
 
-                if data.get("email", False):
-                    EmailSender().send_email_verification_mail(request, updated_user)
+            self.check_object_permissions(request, user_to_update)
 
-                    return Response(
-                        create_200(
-                            status.HTTP_202_ACCEPTED,
-                            "User Updated",
-                            f"""Account with username `{url_username}` updated to new credentials! 
-                            Since new email has been provided, please verifythe email to use account again""",
-                        ),
-                        status=status.HTTP_202_ACCEPTED,
-                    )
+            serializer = self.serializer_class(data=data)
+            serializer.is_valid(raise_exception=True)
+            updated_user = serializer.update_user(user_to_update, **data)
+
+            if data.get("email", False):
+                EmailSender().send_email_verification_mail(request, updated_user)
 
                 return Response(
                     create_200(
                         status.HTTP_202_ACCEPTED,
                         "User Updated",
-                        f"Account with username `{url_username}` updated to new credentials! {self.message}",
+                        f"""Account with username `{url_username}` updated to new credentials! 
+                        Since new email has been provided, please verify the email to use account again""",
                     ),
                     status=status.HTTP_202_ACCEPTED,
                 )
 
-                # TODO create activity
-
-            else:
-                raise UrlParameterError(
-                    instance=request,
-                    message=create_400(
-                        status.HTTP_400_BAD_REQUEST,
-                        "Url parameter wrong",
-                        '"username" must be provided',
-                    ),
-                )
-
-        except (
-            UrlParameterError,
-            PreExistenceError,
-            MissingFieldsError,
-            ExtraFieldsError,
-            NoneExistenceError,
-        ) as error:
-            return Response(error.message, status=status.HTTP_400_BAD_REQUEST)
-
-        except (PermissionDenied, NotAuthenticated) as error:
             return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
+                create_200(
+                    status.HTTP_202_ACCEPTED,
+                    "User Updated",
+                    f"Account with username `{url_username}` updated to new credentials! {self.message}",
                 ),
-                status=error.status_code,
+                status=status.HTTP_202_ACCEPTED,
             )
 
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not update credentials for user `{url_username}` due to an unknown error.",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            # TODO create activity
+
+        else:
+            raise UrlParameterError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Url parameter wrong",
+                verbose='"username" must be provided',
+                cause=request,
             )
 
 
@@ -230,7 +170,7 @@ class ChangePasswordView(UpdateUserView):
     """ """
 
     serializer_class = ChangePasswordSerializer
-    permission_classes = [IsAuthenticated, IsOwner, IsPasswordMatching]
+    permission_classes = [IsAuthenticatedCustom, IsOwner, IsPasswordMatching]
     field_options = ["password", "current_password"]
     required_fields = field_options
     message = "Password successfully changed."
@@ -240,7 +180,7 @@ class DeactivateUserView(UpdateUserView):
     """ """
 
     serializer_class = DeactivateSerializer
-    permission_classes = [IsAuthenticated, IsOwner, IsPasswordMatching]
+    permission_classes = [IsAuthenticatedCustom, IsOwner, IsPasswordMatching]
     field_options = ["active", "current_password"]
     required_fields = field_options
     message = "User account has been deactivated."
@@ -258,99 +198,65 @@ class ActivateUserView(APIView):
     def get(self, request):
         return Response("Activate page")
 
+    @try_except_http_error_decorator
     def post(self, request, *args, **kwargs):
         """ """
 
+        data = request.data
+
+        # check fields
+        r_checker = RequestFieldsChecker()
+        checker = DbExistenceChecker()
+
+        r_checker.check_required_field_or_raise(data, self.required_fields)
+        r_checker.check_extra_fields_or_raise(
+            data, self.field_options, self.required_fields
+        )
+
+        # check user existence
         try:
-            data = request.data
+            if data.__contains__("username"):
+                username_user = checker.check_return_user_existence(
+                    username=data.get("username")
+                )
+                user_to_activate = username_user
 
-            # check fields
-            RequestFieldsChecker().check_required_field_or_raise(
-                data, self.required_fields
-            )
-            RequestFieldsChecker().check_extra_fields_or_raise(
-                data, self.field_options, self.required_fields
-            )
+            if data.__contains__("email"):
+                email_user = checker.check_return_user_existence(
+                    email=data.get("email")
+                )
+                user_to_activate = email_user
 
-            # check user existence
-            try:
-                if data.__contains__("username"):
-                    username_user = DbExistenceChecker().check_return_user_existence(
-                        username=data.get("username")
-                    )
-                    user_to_activate = username_user
-
-                if data.__contains__("email"):
-                    email_user = DbExistenceChecker().check_return_user_existence(
-                        email=data.get("email")
-                    )
-                    user_to_activate = email_user
-
-                if data.__contains__("email") and data.__contains__("username"):
-                    if username_user.id != email_user.id:
-                        raise UnmatchedFieldsError(
-                            request,
-                            create_400(
-                                status.HTTP_400_BAD_REQUEST,
-                                "Unmatched fields",
-                                "Provided fields email and username are not associated with same user",
-                            ),
-                        )
-
-                if user_to_activate.check_password(data.get("current_password")):
-                    CustomUser.objects.update_user(user_to_activate.id, active=True)
-
-                    return Response(
-                        create_200(
-                            status.HTTP_202_ACCEPTED,
-                            "User Updated",
-                            f"{user_to_activate.username} account has been activated!",
-                        ),
-                        status=status.HTTP_202_ACCEPTED,
-                    )
-                else:
-                    raise PermissionDenied(
-                        code="Permission Denied",
-                        detail="Password incorrect",
+            if data.__contains__("email") and data.__contains__("username"):
+                if username_user.id != email_user.id:
+                    raise UnmatchedFieldsError(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        message="Unmatched fields",
+                        verbose="Provided fields email and username are not associated with same user",
                     )
 
-            except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-                raise NoneExistenceError(
-                    request.data,
-                    create_400(
-                        400,
-                        "Non existence",
-                        f"Account with given credentials does not exist!",
+            if user_to_activate.check_password(data.get("current_password")):
+                CustomUser.objects.update_user(user_to_activate.id, active=True)
+                return Response(
+                    create_200(
+                        status.HTTP_202_ACCEPTED,
+                        "User Updated",
+                        f"{user_to_activate.username} account has been activated!",
                     ),
+                    status=status.HTTP_202_ACCEPTED,
+                )
+            else:
+                raise PermissionDenied(
+                    code="Permission Denied",
+                    detail="Password incorrect",
                 )
 
-        except (
-            UrlParameterError,
-            PreExistenceError,
-            MissingFieldsError,
-            ExtraFieldsError,
-            NoneExistenceError,
-            UnmatchedFieldsError,
-        ) as error:
-            return Response(error.message, status=status.HTTP_400_BAD_REQUEST)
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not activate user {user_to_activate.username} due to an unknown error.",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            raise NoneExistenceError(
+                status_code=400,
+                message="Non existence",
+                verbose=f"Account with given credentials does not exist!",
+                cause=request,
             )
 
 
@@ -362,94 +268,65 @@ class ActivateUserView(APIView):
 class DeleteUserView(APIView):
     """ """
 
-    permission_classes = [IsAuthenticated, IsOwner, IsPasswordMatching]
+    permission_classes = [IsAuthenticatedCustom, IsOwner, IsPasswordMatching]
     serializer_class = DeleteUserSerializer
     field_options = ["current_password"]
     required_fields = ["current_password"]
 
+    @try_except_http_error_decorator
     def delete(self, request, *args, **kwargs):
         """ """
 
-        try:
-            url_username = kwargs["username"]
-            data = request.data
+        url_username = kwargs["username"]
+        data = request.data
 
-            if url_username:
+        if url_username:
 
-                # check fields
-                r_checker = RequestFieldsChecker()
-                r_checker.check_required_field_or_raise(data, self.required_fields)
-                r_checker.check_extra_fields_or_raise(data, self.field_options)
+            # check fields
+            r_checker = RequestFieldsChecker()
+            checker = DbExistenceChecker()
 
-                # check user existence
-                try:
-                    checker = DbExistenceChecker()
-                    user_to_delete = checker.check_return_user_existence(
-                        username=url_username
-                    )
-                    # check object permissions
-                    self.check_object_permissions(request, user_to_delete)
-
-                    # update fields
-                    user_to_delete.delete()
-
-                    #  send email
-
-                    return Response(
-                        create_200(
-                            status.HTTP_202_ACCEPTED,
-                            "User Deleted",
-                            f"Account with username `{url_username}` deleted!",
-                        ),
-                        status=status.HTTP_202_ACCEPTED,
-                    )
-
-                except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-                    raise NoneExistenceError(
-                        url_username,
-                        create_400(
-                            400,
-                            "Non existence",
-                            f"Account with username `{url_username}` credentials does not exist!",
-                        ),
-                    )
-
-            else:
-                raise UrlParameterError(
-                    instance=request,
-                    message=create_400(
-                        status.HTTP_400_BAD_REQUEST,
-                        "Url parameter wrong",
-                        '"username" must be provided',
-                    ),
-                )
-
-        except (
-            UrlParameterError,
-            NoneExistenceError,
-            MissingFieldsError,
-            ExtraFieldsError,
-            PreExistenceError,
-        ) as error:
-            return Response(error.message, status=status.HTTP_400_BAD_REQUEST)
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
+            r_checker.check_required_field_or_raise(data, self.required_fields)
+            r_checker.check_extra_fields_or_raise(
+                data, self.field_options, self.required_fields
             )
 
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not delete account of user {url_username} due to an unknown error.",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            # check user existence
+            try:
+                user_to_delete = checker.check_return_user_existence(
+                    username=url_username
+                )
+                # check object permissions
+                self.check_object_permissions(request, user_to_delete)
+
+                # update fields
+                user_to_delete.delete()
+
+                #  send email TODO
+
+                return Response(
+                    create_200(
+                        status.HTTP_202_ACCEPTED,
+                        "User Deleted",
+                        f"Account with username `{url_username}` deleted!",
+                    ),
+                    status=status.HTTP_202_ACCEPTED,
+                )
+
+            except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+                raise NoneExistenceError(
+                    status_code=400,
+                    message="Non existence",
+                    verbose=f"Account with username `{url_username}` credentials does not exist!",
+                    cause=request,
+                )
+
+        else:
+            raise UrlParameterError(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Url parameter wrong",
+                verbose='"username" must be provided',
+                cause=request,
             )
 
 

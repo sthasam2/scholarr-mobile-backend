@@ -12,30 +12,104 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('updated_date', models.DateTimeField(auto_now=True)),
-                ('account_verified', models.BooleanField(default=False)),
-                ('use_persona', models.BooleanField(default=True)),
-                ('persona', models.PositiveIntegerField(default=1)),
-                ('avatar', models.ImageField(default='default.png', upload_to='avatar/')),
-                ('cover', models.ImageField(default='default.png', upload_to='cover/')),
-                ('bio', models.CharField(blank=True, help_text="What's on your mind?", max_length=200, null=True)),
-                ('name', models.CharField(help_text='Full Name. For eg. Will Smith ', max_length=747)),
-                ('nickname', models.CharField(help_text='Nickname. The name you want to be called. For eg. Will', max_length=50)),
-                ('dob', models.DateTimeField(blank=True, null=True, validators=[apps.profiles.validators.validate_date_lt_today])),
-                ('location', models.CharField(blank=True, help_text='User Location. Street, Municipality/VDC, State, Country', max_length=200, null=True)),
-                ('phone', models.CharField(blank=True, max_length=17, null=True, unique=True, validators=[django.core.validators.RegexValidator(message='Phone number. It must contain Dialing code and contact number. For eg. +977980000000000', regex='^\\+?1?\\d{9,14}$')])),
-                ('phone_verified', models.BooleanField(default=False, help_text='Contact number verified')),
-                ('private', models.BooleanField(default=False, help_text='Profile Privacy')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to='users.customuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                ("updated_date", models.DateTimeField(auto_now=True)),
+                ("account_verified", models.BooleanField(default=False)),
+                ("use_persona", models.BooleanField(default=True)),
+                ("persona", models.PositiveIntegerField(default=1)),
+                (
+                    "avatar",
+                    models.ImageField(default="default.png", upload_to="avatar/"),
+                ),
+                ("cover", models.ImageField(default="default.png", upload_to="cover/")),
+                (
+                    "bio",
+                    models.CharField(
+                        blank=True,
+                        help_text="What's on your mind?",
+                        max_length=200,
+                        null=True,
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Full Name. For eg. Will Smith ", max_length=747
+                    ),
+                ),
+                (
+                    "nickname",
+                    models.CharField(
+                        help_text="Nickname. The name you want to be called. For eg. Will",
+                        max_length=50,
+                    ),
+                ),
+                (
+                    "dob",
+                    models.DateTimeField(
+                        blank=True,
+                        null=True,
+                        validators=[apps.profiles.validators.validate_date_lt_today],
+                    ),
+                ),
+                (
+                    "location",
+                    models.CharField(
+                        blank=True,
+                        help_text="User Location. Street, Municipality/VDC, State, Country",
+                        max_length=200,
+                        null=True,
+                    ),
+                ),
+                (
+                    "phone",
+                    models.CharField(
+                        blank=True,
+                        max_length=17,
+                        null=True,
+                        unique=True,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Phone number. It must contain Dialing code and contact number. For eg. +977980000000000",
+                                regex="^\\+?1?\\d{9,14}$",
+                            )
+                        ],
+                    ),
+                ),
+                (
+                    "phone_verified",
+                    models.BooleanField(
+                        default=False, help_text="Contact number verified"
+                    ),
+                ),
+                (
+                    "private",
+                    models.BooleanField(default=False, help_text="Profile Privacy"),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="profile",
+                        to="users.customuser",
+                    ),
+                ),
             ],
         ),
     ]

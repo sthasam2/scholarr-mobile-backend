@@ -1,8 +1,9 @@
 import datetime as dt
 
 import pytz
-from configs.definitions import TIME_ZONE
 from django.core.exceptions import ValidationError
+
+from configs.definitions import TIME_ZONE
 
 
 def validate_date_lt_today(value):

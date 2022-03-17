@@ -1,8 +1,29 @@
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import BasePermission
 
+from apps.core.helpers import create_400
 from apps.profiles.models import Profile
 from apps.users.models import CustomUser
+
+
+class IsAuthenticatedCustom(BasePermission):
+    """Custom IsAuthenticated Permission"""
+
+    def has_permission(self, request, view):
+
+        is_authenticated = bool(request.user and request.user.is_authenticated)
+        if is_authenticated:
+            return is_authenticated
+        else:
+            raise NotAuthenticated(
+                create_400(
+                    status=401,
+                    cause=request,
+                    message="Not Authenticated",
+                    verbose="Authentication credentials were not provided.",
+                )
+            )
+
 
 ######################################
 ##           OWNER

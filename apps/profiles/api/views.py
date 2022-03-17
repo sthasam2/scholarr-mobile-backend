@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.decorators import try_except_http_error_decorator
 from apps.core.exceptions import (
     ExtraFieldsError,
     MissingFieldsError,
@@ -11,7 +12,11 @@ from apps.core.exceptions import (
     UrlParameterError,
 )
 from apps.core.helpers import create_200, create_400, create_500
-from apps.core.permissions import IsProfileOwner, IsProfilePasswordMatching
+from apps.core.permissions import (
+    IsAuthenticatedCustom,
+    IsProfileOwner,
+    IsProfilePasswordMatching,
+)
 from apps.profiles.utils import check_fields, get_profile_from_url_username_or_raise
 
 from .serializers import (
@@ -33,51 +38,25 @@ class ProfileDetailView(APIView):
     alternative_serializer_class = ProfilePrivateSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    @try_except_http_error_decorator
     def get(self, request, *args, **kwargs):
         """ """
 
-        try:
-            profile_instance = get_profile_from_url_username_or_raise(**kwargs)
-            self.check_object_permissions(request, profile_instance)
-            # check owner
-            if request.user.id == profile_instance.user.id:
-                serializer = self.owner_serializer_class(profile_instance)
-            # if not owner
+        profile_instance = get_profile_from_url_username_or_raise(**kwargs)
+        self.check_object_permissions(request, profile_instance)
+        # check owner
+        if request.user.id == profile_instance.user.id:
+            serializer = self.owner_serializer_class(profile_instance)
+        # if not owner
+        else:
+            # private
+            if profile_instance.private:
+                serializer = self.alternative_serializer_class(profile_instance)
+            # public
             else:
-                # private
-                if profile_instance.private:
-                    # follower
-                    if request.user.id in profile_instance.user.user_follower.follower:
-                        serializer = self.serializer_class(profile_instance)
-                    else:
-                        serializer = self.alternative_serializer_class(profile_instance)
-                # public
-                else:
-                    serializer = self.serializer_class(profile_instance)
+                serializer = self.serializer_class(profile_instance)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        except (UrlParameterError, NoneExistenceError) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not get details for `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProfileSummaryView(APIView):
@@ -85,37 +64,15 @@ class ProfileSummaryView(APIView):
     serializer_class = ProfileSummarySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    @try_except_http_error_decorator
     def get(self, request, *args, **kwargs):
         """ """
 
-        try:
-            profile_instance = get_profile_from_url_username_or_raise(**kwargs)
-            self.check_object_permissions(request, profile_instance)
-            serializer = self.serializer_class(profile_instance)
+        profile_instance = get_profile_from_url_username_or_raise(**kwargs)
+        self.check_object_permissions(request, profile_instance)
+        serializer = self.serializer_class(profile_instance)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        except (UrlParameterError, NoneExistenceError) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not get details for `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UpdateProfileView(APIView):
@@ -141,7 +98,7 @@ class UpdateProfileView(APIView):
 
     serializer_class = UpdateProfileSerializer
     permission_classes = [
-        IsAuthenticated,
+        IsAuthenticatedCustom,
         IsProfileOwner,
         # IsProfilePasswordMatching,
     ]
@@ -159,55 +116,28 @@ class UpdateProfileView(APIView):
         "current_password",
     ]
 
+    @try_except_http_error_decorator
     def patch(self, request, *args, **kwargs):
         """ """
 
-        try:
-            data = request.data
+        data = request.data
 
-            profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
-            check_fields(data, self.field_options, self.required_fields)
-            self.check_object_permissions(request, profile_to_update)
+        profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
+        check_fields(data, self.field_options, self.required_fields)
+        self.check_object_permissions(request, profile_to_update)
 
-            serializer = self.serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.update_profile(profile_to_update, **serializer.validated_data)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update_profile(profile_to_update, **serializer.validated_data)
 
-            return Response(
-                create_200(
-                    status.HTTP_200_OK,
-                    "Profile Updated",
-                    f"Profile credentials of user `{kwargs.get('username')}` has been updated.",
-                ),
-                status=status.HTTP_200_OK,
-            )
-
-        except (
-            UrlParameterError,
-            NoneExistenceError,
-            ExtraFieldsError,
-            MissingFieldsError,
-        ) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not update credentials for `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(
+            create_200(
+                status.HTTP_200_OK,
+                "Profile Updated",
+                f"Profile credentials of user `{kwargs.get('username')}` has been updated.",
+            ),
+            status=status.HTTP_200_OK,
+        )
 
 
 class ChangePrivateProfileView(APIView):
@@ -223,63 +153,35 @@ class ChangePrivateProfileView(APIView):
 
     serializer_class = ChangePrivateProfileSerializer
     permission_classes = [
-        IsAuthenticated,
+        IsAuthenticatedCustom,
         IsProfileOwner,
         # IsProfilePasswordMatching,
     ]
-    required_fields = None
-    # required_fields = ["current_password"]
+
+    required_fields = []
     field_options = ["current_password"]
 
     def post(self, request, *args, **kwargs):
         """ """
 
-        try:
-            data = request.data
+        data = request.data
 
-            profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
-            check_fields(data, self.field_options, self.required_fields)
-            self.check_object_permissions(request, profile_to_update)
+        profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
+        # check_fields(data, self.field_options, self.required_fields)
+        self.check_object_permissions(request, profile_to_update)
 
-            serializer = self.serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
-            private = serializer.change_private(profile_to_update)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        private = serializer.change_private(profile_to_update)
 
-            return Response(
-                create_200(
-                    status.HTTP_200_OK,
-                    "Profile Updated",
-                    f"Profile of user `{kwargs.get('username')}` has turned privacy to {private}",
-                ),
-                status=status.HTTP_200_OK,
-            )
-
-        except (
-            UrlParameterError,
-            NoneExistenceError,
-            MissingFieldsError,
-            ExtraFieldsError,
-        ) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not make private `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(
+            create_200(
+                status.HTTP_200_OK,
+                "Profile Updated",
+                f"Profile of user `{kwargs.get('username')}` has turned privacy to {private}",
+            ),
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProfileImageUploadView(APIView):
@@ -295,7 +197,7 @@ class ProfileImageUploadView(APIView):
 
     serializer_class = ProfileImagesSerializer
     permission_classes = [
-        IsAuthenticated,
+        IsAuthenticatedCustom,
         IsProfileOwner,
     ]
     required_fields = None
@@ -317,56 +219,32 @@ class ProfileImageUploadView(APIView):
                 ),
             )
 
+    @try_except_http_error_decorator
     def post(self, request, *args, **kwargs):
         """ """
 
-        try:
-            profile_instance = get_profile_from_url_username_or_raise(**kwargs)
-            self.check_object_permissions(request, profile_instance)
-            data = request.data
+        profile_instance = get_profile_from_url_username_or_raise(**kwargs)
+        self.check_object_permissions(request, profile_instance)
+        data = request.data
 
-            #  check images
-            self.check_images(data)
+        #  check images
+        self.check_images(data)
 
-            serializer = self.serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
-            updated_user = serializer.update(
-                profile_instance, serializer.validated_data
-            )
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        updated_user = serializer.update(profile_instance, serializer.validated_data)
 
-            return Response(
-                create_200(
-                    status.HTTP_200_OK,
-                    "Profile Updated",
-                    f"""Profile picture of user `{kwargs.get('username')}` updated. 
-                    Now: 
-                    `avatar={updated_user.avatar.path}`, 
-                    `cover={updated_user.cover.path}`""",
-                ),
-                status=status.HTTP_200_OK,
-            )
-
-        except (UrlParameterError, NoneExistenceError, MissingFieldsError) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not make private `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(
+            create_200(
+                status.HTTP_200_OK,
+                "Profile Updated",
+                f"""Profile picture of user `{kwargs.get('username')}` updated. 
+                Now: 
+                `avatar={updated_user.avatar.path}`, 
+                `cover={updated_user.cover.path}`""",
+            ),
+            status=status.HTTP_200_OK,
+        )
 
 
 class EnableDisablePersonaView(APIView):
@@ -384,7 +262,7 @@ class EnableDisablePersonaView(APIView):
 
     serializer_class = UpdateProfileSerializer
     permission_classes = [
-        IsAuthenticated,
+        IsAuthenticatedCustom,
         IsProfileOwner,
         # IsProfilePasswordMatching,
     ]
@@ -396,55 +274,27 @@ class EnableDisablePersonaView(APIView):
     def patch(self, request, *args, **kwargs):
         """ """
 
-        try:
-            data = request.data
+        data = request.data
 
-            profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
-            check_fields(data, self.field_options, self.required_fields)
-            self.check_object_permissions(request, profile_to_update)
+        profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
+        check_fields(data, self.field_options, self.required_fields)
+        self.check_object_permissions(request, profile_to_update)
 
-            serializer = self.serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
 
-            persona_enabled = profile_to_update.use_persona
-            profile_to_update.use_persona = not persona_enabled
-            profile_to_update.save()
+        persona_enabled = profile_to_update.use_persona
+        profile_to_update.use_persona = not persona_enabled
+        profile_to_update.save()
 
-            return Response(
-                create_200(
-                    status.HTTP_200_OK,
-                    "Profile Updated",
-                    f"Profile credentials of user `{kwargs.get('username')}` has been updated. Use_persona set to {not persona_enabled}",
-                ),
-                status=status.HTTP_200_OK,
-            )
-
-        except (
-            UrlParameterError,
-            NoneExistenceError,
-            ExtraFieldsError,
-            MissingFieldsError,
-        ) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not update credentials for `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(
+            create_200(
+                status.HTTP_200_OK,
+                "Profile Updated",
+                f"Profile credentials of user `{kwargs.get('username')}` has been updated. Use_persona set to {not persona_enabled}",
+            ),
+            status=status.HTTP_200_OK,
+        )
 
 
 class SetPersonaView(APIView):
@@ -463,7 +313,7 @@ class SetPersonaView(APIView):
 
     serializer_class = UpdateProfileSerializer
     permission_classes = [
-        IsAuthenticated,
+        IsAuthenticatedCustom,
         IsProfileOwner,
         # IsProfilePasswordMatching,
     ]
@@ -476,49 +326,21 @@ class SetPersonaView(APIView):
     def patch(self, request, *args, **kwargs):
         """ """
 
-        try:
-            data = request.data
+        data = request.data
 
-            profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
-            check_fields(data, self.field_options, self.required_fields)
-            self.check_object_permissions(request, profile_to_update)
+        profile_to_update = get_profile_from_url_username_or_raise(**kwargs)
+        check_fields(data, self.field_options, self.required_fields)
+        self.check_object_permissions(request, profile_to_update)
 
-            serializer = self.serializer_class(data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.update_profile(profile_to_update, **serializer.validated_data)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update_profile(profile_to_update, **serializer.validated_data)
 
-            return Response(
-                create_200(
-                    status.HTTP_200_OK,
-                    "Profile Updated",
-                    f"Profile credentials of user `{kwargs.get('username')}` has been updated. Persona has been set to {data['persona']}",
-                ),
-                status=status.HTTP_200_OK,
-            )
-
-        except (
-            UrlParameterError,
-            NoneExistenceError,
-            ExtraFieldsError,
-            MissingFieldsError,
-        ) as error:
-            return Response(error.message, status=error.message.get("status"))
-
-        except (PermissionDenied, NotAuthenticated) as error:
-            return Response(
-                create_400(
-                    error.status_code,
-                    error.get_codes(),
-                    error.get_full_details().get("message"),
-                ),
-                status=error.status_code,
-            )
-
-        except Exception as error:
-            return Response(
-                create_500(
-                    cause=error.args[0] or None,
-                    verbose=f"Could not update credentials for `{kwargs.get('username')}` due to an unknown error",
-                ),
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        return Response(
+            create_200(
+                status.HTTP_200_OK,
+                "Profile Updated",
+                f"Profile credentials of user `{kwargs.get('username')}` has been updated. Persona has been set to {data['persona']}",
+            ),
+            status=status.HTTP_200_OK,
+        )

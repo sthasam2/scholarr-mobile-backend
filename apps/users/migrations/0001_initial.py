@@ -8,39 +8,91 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='CustomUser',
+            name="CustomUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('username', models.CharField(db_index=True, help_text='Username. example: sam_smith', max_length=150, unique=True)),
-                ('email', models.EmailField(db_index=True, help_text='Email address. example: example@example.domain', max_length=150, unique=True)),
-                ('registered_date', models.DateTimeField(auto_now_add=True)),
-                ('email_verified', models.BooleanField(default=False)),
-                ('admin', models.BooleanField(default=False)),
-                ('staff', models.BooleanField(default=False)),
-                ('active', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        db_index=True,
+                        help_text="Username. example: sam_smith",
+                        max_length=150,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "email",
+                    models.EmailField(
+                        db_index=True,
+                        help_text="Email address. example: example@example.domain",
+                        max_length=150,
+                        unique=True,
+                    ),
+                ),
+                ("registered_date", models.DateTimeField(auto_now_add=True)),
+                ("email_verified", models.BooleanField(default=False)),
+                ("admin", models.BooleanField(default=False)),
+                ("staff", models.BooleanField(default=False)),
+                ("active", models.BooleanField(default=False)),
             ],
             options={
-                'verbose_name': 'Custom User',
-                'verbose_name_plural': 'Custom Users',
+                "verbose_name": "Custom User",
+                "verbose_name_plural": "Custom Users",
             },
         ),
         migrations.CreateModel(
-            name='EmailToken',
+            name="EmailToken",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('purpose', models.CharField(choices=[('e_ver', 'Email Verification'), ('p_rst', 'Password Reset'), ('act_acc', 'Activate Account')], max_length=50)),
-                ('token', models.CharField(max_length=50)),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('expired', models.BooleanField(default=False)),
-                ('used', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='users.customuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "purpose",
+                    models.CharField(
+                        choices=[
+                            ("e_ver", "Email Verification"),
+                            ("p_rst", "Password Reset"),
+                            ("act_acc", "Activate Account"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("token", models.CharField(max_length=50)),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                ("expired", models.BooleanField(default=False)),
+                ("used", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="users.customuser",
+                    ),
+                ),
             ],
         ),
     ]

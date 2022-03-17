@@ -15,62 +15,169 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Attachment',
+            name="Attachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('_created_at', models.DateTimeField(auto_now_add=True)),
-                ('file', models.FileField(upload_to='%(app_name)s_files/')),
-                ('type', models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_created_at", models.DateTimeField(auto_now_add=True)),
+                ("file", models.FileField(upload_to="%(app_name)s_files/")),
+                ("type", models.CharField(blank=True, max_length=100, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Classwork',
+            name="Classwork",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('_created_date', models.DateTimeField(auto_now_add=True)),
-                ('_modified_date', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=5000)),
-                ('modified', models.BooleanField(default=False)),
-                ('attachments', models.BooleanField(default=False)),
-                ('type', models.CharField(choices=[('A', 'ASSIGNMENT'), ('Q', 'QUESTION'), ('T', 'TEST'), ('P', 'POLL'), ('D', 'DEFAULT')], max_length=1)),
-                ('_created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_%(class)s', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_created_date", models.DateTimeField(auto_now_add=True)),
+                ("_modified_date", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=5000)),
+                ("modified", models.BooleanField(default=False)),
+                ("attachments", models.BooleanField(default=False)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("A", "ASSIGNMENT"),
+                            ("Q", "QUESTION"),
+                            ("T", "TEST"),
+                            ("P", "POLL"),
+                            ("D", "DEFAULT"),
+                        ],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "_created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_%(class)s",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Resource',
+            name="Resource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('_created_date', models.DateTimeField(auto_now_add=True)),
-                ('_modified_date', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=5000)),
-                ('modified', models.BooleanField(default=False)),
-                ('attachments', models.BooleanField(default=False)),
-                ('type', models.CharField(choices=[('N', 'NOTES'), ('B', 'BOOKS'), ('LP', 'LECTURE_PLAN'), ('M', 'MEDIA'), ('L', 'LINKS'), ('D', 'DEFAULT')], max_length=2)),
-                ('_created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_%(class)s', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_created_date", models.DateTimeField(auto_now_add=True)),
+                ("_modified_date", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.CharField(max_length=5000)),
+                ("modified", models.BooleanField(default=False)),
+                ("attachments", models.BooleanField(default=False)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("N", "NOTES"),
+                            ("B", "BOOKS"),
+                            ("LP", "LECTURE_PLAN"),
+                            ("M", "MEDIA"),
+                            ("L", "LINKS"),
+                            ("D", "DEFAULT"),
+                        ],
+                        max_length=2,
+                    ),
+                ),
+                (
+                    "_created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_%(class)s",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ResourceHasAttachment',
+            name="ResourceHasAttachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attachment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachment_resource', to='classroom_contents.attachment')),
-                ('resource', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='resource_attachment', to='classroom_contents.resource')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "attachment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachment_resource",
+                        to="classroom_contents.attachment",
+                    ),
+                ),
+                (
+                    "resource",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="resource_attachment",
+                        to="classroom_contents.resource",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ClassworkHasAttachment',
+            name="ClassworkHasAttachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attachment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachment_classwork', to='classroom_contents.attachment')),
-                ('classwork', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classwork_attachment', to='classroom_contents.classwork')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "attachment",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachment_classwork",
+                        to="classroom_contents.attachment",
+                    ),
+                ),
+                (
+                    "classwork",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classwork_attachment",
+                        to="classroom_contents.classwork",
+                    ),
+                ),
             ],
         ),
     ]

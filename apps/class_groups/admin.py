@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.class_groups.models import ClassGroup
+
+admin.site.register(ClassGroup)

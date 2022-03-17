@@ -138,13 +138,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         except AuthenticationFailed as error:
             raise CustomAuthenticationFailed(
-                "Autentication",
-                create_400(
-                    404,
-                    "Invalid username or password",
-                    f"Account with given credentials does not exist!",
-                    "email/password",
-                ),
+                cause="Autentication",
+                status_code=404,
+                message="Invalid username or password",
+                verbose=f"Account with given credentials does not exist!",
             )
 
 

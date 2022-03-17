@@ -1,5 +1,16 @@
 # Changelogs
 
+## v.0.1.4: Add Class Group logics, Major Modifications, Additions, Refactoring, Fixes
+
+17 Mar, 2022
+
+1. Add Class Group views, serializers, etc.
+2. Add decorator (@try_except_http_error_decorator) for try_except to catch errors
+3. Refactor code to use @try_except_http_error_decorator for all api views
+4. Modified Custom Base exception to use (status_code, message, verbose, cause) instead of (instance, message)
+5. Added Permissions
+6. Bug Fixes, Code Cleaning
+
 ## v.0.1.3: Replaced drf-yasg with drf-spectacular, Fixes
 
 20 Feb, 2022

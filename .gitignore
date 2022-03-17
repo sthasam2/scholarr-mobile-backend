@@ -6,6 +6,7 @@ db.sqlite3
 .vscode/
 # migrations/
 staticfiles/
+media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -13,62 +13,167 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('classrooms', '0001_initial'),
+        ("classrooms", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ClassGroup',
+            name="ClassGroup",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('_created_date', models.DateTimeField(auto_now_add=True)),
-                ('_modified_date', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=200)),
-                ('classgroup_code', models.CharField(max_length=32)),
-                ('faculty', models.CharField(max_length=200)),
-                ('batch', models.CharField(max_length=200)),
-                ('organisation', models.CharField(max_length=200)),
-                ('active', models.BooleanField(default=True)),
-                ('_created_by', models.ForeignKey(on_delete=models.SET(apps.class_groups.models.get_sentinel_user), related_name='created_classgroup', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_created_date", models.DateTimeField(auto_now_add=True)),
+                ("_modified_date", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=200)),
+                ("classgroup_code", models.CharField(max_length=32)),
+                ("faculty", models.CharField(max_length=200)),
+                ("batch", models.CharField(max_length=200)),
+                ("organisation", models.CharField(max_length=200)),
+                ("active", models.BooleanField(default=True)),
+                (
+                    "_created_by",
+                    models.ForeignKey(
+                        on_delete=models.SET(
+                            apps.class_groups.models.get_sentinel_user
+                        ),
+                        related_name="created_classgroup",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'ClassGroups',
+                "verbose_name_plural": "ClassGroups",
             },
         ),
         migrations.CreateModel(
-            name='ClassGroupStudentInviteOrRequest',
+            name="ClassGroupStudentInviteOrRequest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('invited', models.BooleanField(default=True)),
-                ('requested', models.BooleanField(default=False)),
-                ('accepted', models.BooleanField(default=False)),
-                ('classgroup', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classgroup_inviterequest_student', to='class_groups.classgroup')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_inviterequest_classgroup', to=settings.AUTH_USER_MODEL)),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='student_inviterequest_classgroup', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                ("invited", models.BooleanField(default=True)),
+                ("requested", models.BooleanField(default=False)),
+                ("accepted", models.BooleanField(default=False)),
+                (
+                    "classgroup",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classgroup_inviterequest_student",
+                        to="class_groups.classgroup",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_inviterequest_classgroup",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="student_inviterequest_classgroup",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ClassGroupHasStudent',
+            name="ClassGroupHasStudent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classgroup', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classgroup_student', to='class_groups.classgroup')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='student_classgroup', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "classgroup",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classgroup_student",
+                        to="class_groups.classgroup",
+                    ),
+                ),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="student_classgroup",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ClassGroupHasRoutineSchedules',
+            name="ClassGroupHasRoutineSchedules",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classgroup', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classgroup_schedule', to='class_groups.classgroup')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "classgroup",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classgroup_schedule",
+                        to="class_groups.classgroup",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ClassGroupHasClassroom',
+            name="ClassGroupHasClassroom",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classgroup', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classgroup_classroom', to='class_groups.classgroup')),
-                ('classroom', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classroom_classgroup', to='classrooms.classroom')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "classgroup",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classgroup_classroom",
+                        to="class_groups.classgroup",
+                    ),
+                ),
+                (
+                    "classroom",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="classroom_classgroup",
+                        to="classrooms.classroom",
+                    ),
+                ),
             ],
         ),
     ]

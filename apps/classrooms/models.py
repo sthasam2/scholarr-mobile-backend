@@ -28,6 +28,54 @@ class Classroom(models.Model):
 
 
 #########################
+#   REQUEST/INVITE
+#########################
+
+
+class JoinClassroomInviteRequest(models.Model):
+    """Model for inviting or requesting classroom"""
+
+    class TargetChoices(models.TextChoices):
+        """Invite/Request Type"""
+
+        CLASSGROUP = "C", "Class Group"
+        STUDENT = "S", "Student"
+        TEACHER = "T", "Teacher"
+
+    _created_by = models.ForeignKey(
+        to=CustomUser,
+        on_delete=models.CASCADE,
+        related_name="created_classroom_invite_request",
+    )
+    _created_date = models.DateTimeField(auto_now_add=True)
+    _modified_date = models.DateTimeField(auto_now=True)
+
+    target_type = models.CharField(max_length=1, choices=TargetChoices.choices)
+    invite = models.BooleanField(default=True)
+    classgroup = models.ForeignKey(
+        to="class_groups.ClassGroup",
+        on_delete=models.CASCADE,
+        related_name="classgroup_classroom_invite_request",
+        null=True,
+        blank=True,
+    )
+    student = models.ForeignKey(
+        to="users.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="student_classroom_invite_request",
+        null=True,
+        blank=True,
+    )
+    teacher = models.ForeignKey(
+        to="users.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="teacher_classroom_invite_request",
+        null=True,
+        blank=True,
+    )
+
+
+#########################
 #   RELATIONSHIPS
 #########################
 

@@ -9,27 +9,89 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('users', '0001_initial'),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("users", "0001_initial"),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='UserActivity',
+            name="UserActivity",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(choices=[('sgu', 'signed up'), ('lgn', 'logged in'), ('rstpw', 'reset password'), ('deac', 'deactivated'), ('del', 'deleted'), ('vw', 'viewed'), ('upd', 'updated'), ('pst', 'posted'), ('upv', 'upvoted'), ('dwv', 'downvoted'), ('crt', 'created'), ('cmt', 'commented'), ('edt', 'edited'), ('unflw', 'unfollowed'), ('flw', 'followed'), ('req', 'requested')], max_length=250)),
-                ('action_id', models.PositiveIntegerField(blank=True, db_index=True, null=True)),
-                ('target_id', models.PositiveIntegerField(blank=True, db_index=True, null=True)),
-                ('created_date', models.DateTimeField(auto_now_add=True)),
-                ('action_content', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='activity_object', to='contenttypes.contenttype')),
-                ('target_content', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='activity_target', to='contenttypes.contenttype')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='activity_of', to='users.customuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "action",
+                    models.CharField(
+                        choices=[
+                            ("sgu", "signed up"),
+                            ("lgn", "logged in"),
+                            ("rstpw", "reset password"),
+                            ("deac", "deactivated"),
+                            ("del", "deleted"),
+                            ("vw", "viewed"),
+                            ("upd", "updated"),
+                            ("pst", "posted"),
+                            ("upv", "upvoted"),
+                            ("dwv", "downvoted"),
+                            ("crt", "created"),
+                            ("cmt", "commented"),
+                            ("edt", "edited"),
+                            ("unflw", "unfollowed"),
+                            ("flw", "followed"),
+                            ("req", "requested"),
+                        ],
+                        max_length=250,
+                    ),
+                ),
+                (
+                    "action_id",
+                    models.PositiveIntegerField(blank=True, db_index=True, null=True),
+                ),
+                (
+                    "target_id",
+                    models.PositiveIntegerField(blank=True, db_index=True, null=True),
+                ),
+                ("created_date", models.DateTimeField(auto_now_add=True)),
+                (
+                    "action_content",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="activity_object",
+                        to="contenttypes.contenttype",
+                    ),
+                ),
+                (
+                    "target_content",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="activity_target",
+                        to="contenttypes.contenttype",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="activity_of",
+                        to="users.customuser",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'User Activity',
-                'verbose_name_plural': 'User Activities',
-                'ordering': ('-created_date',),
+                "verbose_name": "User Activity",
+                "verbose_name_plural": "User Activities",
+                "ordering": ("-created_date",),
             },
         ),
     ]

@@ -10,7 +10,7 @@ class Profile(models.Model):
     """ """
 
     user = models.OneToOneField(
-        CustomUser, related_name="profile", on_delete=models.CASCADE
+        CustomUser, related_name="user_profile", on_delete=models.CASCADE
     )
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)

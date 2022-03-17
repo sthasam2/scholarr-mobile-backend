@@ -12,28 +12,27 @@ def create_500(cause=None, verbose=None) -> dict:
         "status": 500,
         "error": {
             "cause": cause,
-            "type": "Internal Server Error",
             "message": "Could not process request due to an internal server error.",
             "verbose": verbose,
         },
     }
 
 
-def create_400(status: int, message: str, detail: str, cause: str = None) -> dict:
+def create_400(status: int, message: str, verbose: str, cause=None) -> dict:
     """
-    creates a dictionary with error code, message, detail
+    creates a dictionary with error code, message, verbose
     """
     return {
         "status": status,
         "error": {
             "message": message,
-            "detail": detail,
+            "verbose": verbose,
             "cause": cause,
         },
     }
 
 
-def create_200(status: int, message: str, detail: str, cause: str = None) -> dict:
+def create_200(status: int, message: str, verbose: str, cause=None) -> dict:
     """
     creates a dictionary with success code, message, message
     """
@@ -41,7 +40,7 @@ def create_200(status: int, message: str, detail: str, cause: str = None) -> dic
         "status": status,
         "success": {
             "message": message,
-            "detail": detail,
+            "verbose": verbose,
             "cause": cause,
         },
     }
@@ -55,18 +54,13 @@ class RequestFieldsChecker:
     ) -> None:
         """ """
 
-        included = list()
-        for key, value in req_body.items():
-            if key in field_options:
-                included.append(key)
-
+        included = set(field_options).intersection(set(req_body))
         if len(included) == 0:
+
             raise MissingFieldsError(
-                message=create_400(
-                    400,
-                    "Missing Fields",
-                    f"No fields from required were provided",
-                ),
+                status_code=400,
+                message="Missing Fields",
+                verbose=f"No fields from required were provided",
             )
         else:
             return None
@@ -75,19 +69,13 @@ class RequestFieldsChecker:
         self, req_body: dict, field_options: list, required_fields: list = None
     ) -> None:
         """ """
-
-        extra = list()
-        for key, value in req_body.items():
-            if key not in field_options and key not in required_fields:
-                extra.append(key)
-
+        options = set(required_fields).union(set(field_options))
+        extra = set(req_body).difference(options)
         if len(extra) != 0:
             raise ExtraFieldsError(
-                message=create_400(
-                    400,
-                    "Extra Fields",
-                    f"Extra fields were provided: \n {extra}",
-                ),
+                status_code=400,
+                message="Extra Fields",
+                verbose=f"Extra fields were provided: \n {extra}",
             )
         else:
             return None
@@ -95,21 +83,13 @@ class RequestFieldsChecker:
     def check_required_field_or_raise(self, req_body, required_fields: list) -> None:
         """ """
 
-        included = list()
-        for key, value in req_body.items():
-            if key in required_fields:
-                included.append(key)
-
-        missing = set(required_fields) - set(included)
+        missing = set(required_fields).difference(set(req_body))
 
         if len(missing) != 0:
             raise MissingFieldsError(
-                missing,
-                create_400(
-                    400,
-                    "Missing Fields",
-                    f"The following required fields are missing:\n {missing}",
-                ),
+                status_code=400,
+                message="Missing Fields",
+                verbose=f"The following required fields are missing:\n {missing}",
             )
         else:
             return None

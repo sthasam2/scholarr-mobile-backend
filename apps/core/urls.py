@@ -1,6 +1,4 @@
-from configs.definitions import DEBUG
-from django.urls import path, re_path, include
-
+from django.urls import include, path, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -8,22 +6,9 @@ from drf_spectacular.views import (
 )
 from rest_framework import permissions
 
+from configs.definitions import DEBUG
+
 from .api.views import HomeView
-
-# if DEBUG:
-# schema_view = get_schema_view(
-#     openapi.Info(
-#         title="Snippets API",
-#         default_version="v1",
-#         description="Test description",
-#         terms_of_service="https://www.google.com/policies/terms/",
-#         contact=openapi.Contact(email="contact@snippets.local"),
-#         license=openapi.License(name="BSD License"),
-#     ),
-#     public=True,
-#     permission_classes=[permissions.AllowAny],
-# )
-
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),

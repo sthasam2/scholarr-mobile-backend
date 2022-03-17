@@ -18,25 +18,27 @@ class CustomBaseError(Error):
 
     Parameters
     ---
-    instance: given instance which caused error
+    cause: given instance which caused error
     message: message for given error
 
     """
 
     name = None
 
-    def __init__(self, instance=None, message=None, summary=None):
+    def __init__(self, cause=None, verbose=None, message=None, status_code=None):
         self.name = type(self).__name__
-        self.instance = instance
+        self.cause = cause
+        self.verbose = verbose
         self.message = message
-        self.summary = summary
+        self.status_code = status_code
 
     def __str__(self):
         return f"""
         {self.name}:
-        \n\tcause: {self.instance} 
-        \n\summary: {self.summary}
+        \n\tcause: {self.cause} 
         \n\tmessage: {self.message}
+        \n\tverbose: {self.verbose}
+        \n\tstatus: {self.status_code}
         """
 
     class Meta:

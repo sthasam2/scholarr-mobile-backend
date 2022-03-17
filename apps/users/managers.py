@@ -1,4 +1,3 @@
-from configs.definitions import DEBUG
 from django.contrib.auth.base_user import BaseUserManager
 
 from apps.core.exceptions import (
@@ -6,6 +5,7 @@ from apps.core.exceptions import (
     PreExistenceError,
     PreviousValueMatchingError,
 )
+from configs.definitions import DEBUG
 
 
 class CustomUserManager(BaseUserManager):

@@ -15,35 +15,94 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Classroom',
+            name="Classroom",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('_created_date', models.DateTimeField(auto_now_add=True)),
-                ('_modified_date', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=200)),
-                ('subject', models.CharField(max_length=100)),
-                ('classroom_code', models.CharField(max_length=32)),
-                ('archive', models.BooleanField(default=False)),
-                ('_created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='has_created_classroom', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("_created_date", models.DateTimeField(auto_now_add=True)),
+                ("_modified_date", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=200)),
+                ("subject", models.CharField(max_length=100)),
+                ("classroom_code", models.CharField(max_length=32)),
+                ("archive", models.BooleanField(default=False)),
+                (
+                    "_created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="has_created_classroom",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Classrooms',
+                "verbose_name_plural": "Classrooms",
             },
         ),
         migrations.CreateModel(
-            name='ClassroomHasTeacher',
+            name="ClassroomHasTeacher",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classroom', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='has_classroom_teacher', to='classrooms.classroom')),
-                ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='has_teaching_classroom', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "classroom",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="has_classroom_teacher",
+                        to="classrooms.classroom",
+                    ),
+                ),
+                (
+                    "teacher",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="has_teaching_classroom",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ClassroomHasStudent',
+            name="ClassroomHasStudent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('classroom', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='has_classroom_student', to='classrooms.classroom')),
-                ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='has_enrolled_classroom', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "classroom",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="has_classroom_student",
+                        to="classrooms.classroom",
+                    ),
+                ),
+                (
+                    "student",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="has_enrolled_classroom",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]
