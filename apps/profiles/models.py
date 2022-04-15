@@ -66,18 +66,6 @@ class Profile(models.Model):
 
     private = models.BooleanField(help_text="Profile Privacy", default=False)
 
-    # def __init__(self, *args, **kwargs):
-    #     """
-    #     Overriding init method
-    #     """
-    #     super(Profile, self).__init__(*args, **kwargs)
-
-    # def save(self, *args, **kwargs):
-    #     """
-    #     Overriding default save method
-    #     """
-    #     super(Profile, self).save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.user.username} Profile"
 

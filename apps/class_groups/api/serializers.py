@@ -1,8 +1,12 @@
 from rest_framework import serializers
 
-from apps.class_groups.models import ClassGroup
-from apps.core.exceptions import UnknownModelFieldsError
+from apps.class_groups.models import ClassGroup, ClassGroupStudentInviteOrRequest
 from apps.core.decorators import try_except_http_error_decorator
+from apps.core.exceptions import UnknownModelFieldsError
+
+#########################
+#   CLASS GROUP
+#########################
 
 
 class ClassGroupSerializer(serializers.ModelSerializer):
@@ -64,7 +68,7 @@ class CreateClassGroupSerializer(serializers.ModelSerializer):
 
 
 class UpdateClassGroupSerializer(serializers.ModelSerializer):
-    """Serializer for Creating Class Group"""
+    """Serializer for Updating Class Group"""
 
     name = serializers.CharField(
         max_length=200,
@@ -119,3 +123,54 @@ class UpdateClassGroupSerializer(serializers.ModelSerializer):
         except Exception as error:
             print("ERROR @update\n", error)
             raise error
+
+
+#########################
+#   MEMBERSHIP
+#########################
+
+
+class CreateInviteClassGroupMemberSerializer(serializers.Serializer):
+    """"""
+
+    id = serializers.IntegerField(
+        required=False,
+        help_text="Id of User to Invite",
+    )
+    email = serializers.EmailField(
+        required=False,
+        help_text="Email of User to Invite",
+    )
+    username = serializers.CharField(
+        required=False,
+        help_text="Username of User to Invite",
+    )
+    classgroup_id = serializers.IntegerField(
+        required=False,
+        help_text="Id of Classgroup to Invite to",
+    )
+    classgroup_code = serializers.CharField(
+        required=False,
+        help_text="Code of Classgroup to Invite to",
+    )
+
+
+class CreateRequestClassGroupMemberSerializer(serializers.Serializer):
+    """"""
+
+    classgroup_id = serializers.IntegerField(
+        required=False,
+        help_text="Id of Classgroup to Request membership for",
+    )
+    classgroup_code = serializers.CharField(
+        required=False,
+        help_text="Code of Classgroup to Request membership for",
+    )
+
+
+class ReadClassGroupMemberSerializer(serializers.ModelSerializer):
+    """"""
+
+    class Meta:
+        model = ClassGroupStudentInviteOrRequest
+        fields = "__all__"

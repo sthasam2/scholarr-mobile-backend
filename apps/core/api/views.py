@@ -13,5 +13,5 @@ class HomeView(APIView):
         """
         GET method at route `api/`
         """
-        content = {"message": "Welcome to Bumblebee API!"}
+        content = {"message": "Welcome to Scholarr API!"}
         return Response(content)

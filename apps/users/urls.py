@@ -20,13 +20,13 @@ from .api.views.user_views import (
 )
 
 register = [
-    path("register/", RegisterView.as_view(), name="register-user"),
+    path("register", RegisterView.as_view(), name="register-user"),
 ]
 
 logins = [
     path("login", LoginView.as_view(), name="login"),
     path("login/refresh", TokenRefreshView.as_view(), name="login-token-refresh"),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("logout", LogoutView.as_view(), name="logout"),
 ]
 
 email_verifications = [
@@ -56,15 +56,23 @@ password_resets = [
 ]
 
 user_methods = [
-    path("user/detail/<slug:username>", UserDetailView.as_view(), name="user-detail"),
-    path("user/update/<slug:username>", UpdateUserView.as_view(), name="update-user"),
     path(
-        "user/change_password/<slug:username>",
+        "user/username=<slug:username>/detail",
+        UserDetailView.as_view(),
+        name="user-detail",
+    ),
+    path(
+        "user/username=<slug:username>/update",
+        UpdateUserView.as_view(),
+        name="update-user",
+    ),
+    path(
+        "user/username=<slug:username>/change_password",
         ChangePasswordView.as_view(),
         name="change-password-user",
     ),
     path(
-        "user/deactivate/<slug:username>",
+        "user/username=<slug:username>/deactivate",
         DeactivateUserView.as_view(),
         name="deactivate-user",
     ),
@@ -73,7 +81,11 @@ user_methods = [
         ActivateUserView.as_view(),
         name="activate-user",
     ),
-    path("user/delete/<slug:username>", DeleteUserView.as_view(), name="delete-user"),
+    path(
+        "user/username=<slug:username>/delete",
+        DeleteUserView.as_view(),
+        name="delete-user",
+    ),
 ]
 
 urlpatterns = register + logins + email_verifications + password_resets + user_methods

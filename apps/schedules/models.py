@@ -15,6 +15,8 @@ class Schedule(models.Model):
         FRI = 6, "FRIDAY"
         SAT = 7, "SATURDAY"
 
+    _created_by = models.ForeignKey(to="users.CustomUser", on_delete=models.CASCADE)
+
     day = models.PositiveIntegerField(
         choices=DayChoices.choices,
         help_text="Pick from 1 to 7, 1 being Sunday and 7 being Saturday",

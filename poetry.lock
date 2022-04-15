@@ -167,6 +167,14 @@ offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
 
 [[package]]
+name = "filetype"
+version = "1.0.10"
+description = "Infer file type and MIME type of any file/buffer. No external dependencies."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "gunicorn"
 version = "20.1.0"
 description = "WSGI HTTP Server for UNIX"
@@ -517,7 +525,7 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e9c9ceb879d2ad21ed7751a7b7649d99807f20e617c5a1cc43f500e4c291f37d"
+content-hash = "1dddf884d8a4db2e89e1d0a4666fbe074e821e0715ff0f71c0306c6be68a8d83"
 
 [metadata.files]
 asgiref = [
@@ -588,6 +596,10 @@ djangorestframework-simplejwt = [
 drf-spectacular = [
     {file = "drf-spectacular-0.21.2.tar.gz", hash = "sha256:aa7a78c8595b63e1ba14906049c770210c8fa34d84b6d1c7dce5c9e334aa2775"},
     {file = "drf_spectacular-0.21.2-py3-none-any.whl", hash = "sha256:4ad3a72609640c57a4ff297d498cb0b810a70aca5555c0760b2da9e2f74a45b2"},
+]
+filetype = [
+    {file = "filetype-1.0.10-py2.py3-none-any.whl", hash = "sha256:63fbe6e818a3d1cfac1d62b196574a7a4b7fc8e06a6c500d53577c018ef127d9"},
+    {file = "filetype-1.0.10.tar.gz", hash = "sha256:323a13500731b6c65a253bc3930bbce9a56dfba71e90b60ffd968ab69d9ae937"},
 ]
 gunicorn = [
     {file = "gunicorn-20.1.0-py3-none-any.whl", hash = "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e"},

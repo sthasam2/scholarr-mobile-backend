@@ -45,80 +45,56 @@ class CustomBaseError(Error):
         abstract = True
 
 
-class RequestBodyError(CustomBaseError):
-    """
-    Exception raise when request body doesn't have fields
-    """
-
-
-class MissingFieldsError(CustomBaseError):
-    """
-    Exception raised when fields are missing
-    """
-
-    pass
-
-
-class UnknownModelFieldsError(CustomBaseError):
-    """
-    Exception raised when model fields dont exist
-    """
-
-    pass
-
-
-class PreviousValueMatchingError(CustomBaseError):
-    """
-    Exception raised when model fields dont exist
-    """
-
-    pass
-
-
-class ExtraFieldsError(CustomBaseError):
-    """
-    Exception raised when fields are extra than required
-    """
-
-    pass
-
-
-class UrlParameterError(CustomBaseError):
-    """
-    Exception raised when url parameter is wrong
-    """
-
-    pass
-
-
-class PreExistenceError(CustomBaseError):
-    """
-    Exception raised when a value already exists somewhere
-    """
-
-    pass
-
-
-class NoneExistenceError(CustomBaseError):
-    """
-    Exception raised when a value already doesnt exists
-    """
-
-    pass
-
-
-class UnmatchedFieldsError(CustomBaseError):
-    """
-    Exception raised when a value already exists somewhere
-    """
-
-    pass
-
-
 class AlreadyEmailVerifiedError(CustomBaseError):
     """
     Exception raised when a user has not verified his email
     """
+
+    pass
+
+
+class AlreadyInvitedError(CustomBaseError):
+    """
+    Exception raised when a user has already been invited
+    """
+
+    pass
+
+
+class AlreadyMemberError(CustomBaseError):
+    """
+    Exception raised when a user is already member
+    """
+
+    pass
+
+
+class AlreadyRespondedError(CustomBaseError):
+    """
+    Exception raised when a user has already accepted or rejected i.e. responded
+    """
+
+    pass
+
+
+class AlreadyRequestedError(CustomBaseError):
+    """
+    Exception raised when a user has already made request
+    """
+
+    pass
+
+
+class AlreadyTeacherError(CustomBaseError):
+    """
+    Exception raised when a user is already teacher
+    """
+
+    pass
+
+
+class CustomAuthenticationFailed(CustomBaseError):
+    """ """
 
     pass
 
@@ -139,16 +115,40 @@ class ExpiredError(CustomBaseError):
     pass
 
 
-class SelfReferenceError(CustomBaseError):
+class ExtraFieldsError(CustomBaseError):
     """
-    Exception raised when a ownself is refernced for certain tasks
+    Exception raised when fields are extra than required
     """
 
     pass
 
 
-class PermissionDeniedError(PermissionDenied):
-    """ """
+class LimitExceededError(CustomBaseError):
+    """
+    Exception raised when limits are exceeded in fields
+    """
+
+    pass
+
+
+class MissingFieldsError(CustomBaseError):
+    """
+    Exception raised when fields are missing
+    """
+
+    pass
+
+
+class MultipleInstancesError(CustomBaseError):
+    """Error when multiple instances are obtained when only one instance is required"""
+
+    pass
+
+
+class NoneExistenceError(CustomBaseError):
+    """
+    Exception raised when a value already doesnt exists
+    """
 
     pass
 
@@ -159,7 +159,61 @@ class NotAuthenticatedError(NotAuthenticated):
     pass
 
 
-class CustomAuthenticationFailed(CustomBaseError):
+class PermissionDeniedError(PermissionDenied):
     """ """
+
+    pass
+
+
+class PreExistenceError(CustomBaseError):
+    """
+    Exception raised when a value already exists somewhere
+    """
+
+    pass
+
+
+class PreviousValueMatchingError(CustomBaseError):
+    """
+    Exception raised when model fields dont exist
+    """
+
+    pass
+
+
+class RequestBodyError(CustomBaseError):
+    """
+    Exception raise when request body doesn't have fields
+    """
+
+
+class SelfReferenceError(CustomBaseError):
+    """
+    Exception raised when a ownself is refernced for certain tasks
+    """
+
+    pass
+
+
+class UnknownModelFieldsError(CustomBaseError):
+    """
+    Exception raised when model fields dont exist
+    """
+
+    pass
+
+
+class UnmatchedFieldsError(CustomBaseError):
+    """
+    Exception raised when a value already exists somewhere
+    """
+
+    pass
+
+
+class UrlParameterError(CustomBaseError):
+    """
+    Exception raised when url parameter is wrong
+    """
 
     pass

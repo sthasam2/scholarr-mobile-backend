@@ -1,5 +1,16 @@
 # Changelogs
 
+## v.0.1.5: (Unstable) Additions, Modification and Fixes 
+
+15 Apr, 2022
+
+1. Add Classroom Content Logic (Not tested, unstable)
+2. Add Classroom Logic
+3. Add Schedules Logic
+4. Add boilerplate plagiarism_detector, planner
+5. Modify setting configs, some app logics, Migrations, etc.
+6. Bug Fixes
+
 ## v.0.1.4: Add Class Group logics, Major Modifications, Additions, Refactoring, Fixes
 
 17 Mar, 2022

@@ -32,6 +32,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "10.0.2.2",
+    "192.168.1.87",
 ]
 
 # Application definition
@@ -52,14 +54,16 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.users.apps.UsersConfig",
     "apps.activities.apps.ActivitiesConfig",
     "apps.class_groups.apps.ClassGroupsConfig",
     "apps.classrooms.apps.ClassroomsConfig",
     "apps.classroom_contents.apps.ClassroomContentsConfig",
     "apps.core.apps.CoreConfig",
-    "apps.schedules.apps.SchedulesConfig",
+    "apps.plagiarism_detector.apps.PlagiarismDetectorConfig",
+    "apps.planners.apps.PlannersConfig",
     "apps.profiles.apps.ProfilesConfig",
+    "apps.schedules.apps.SchedulesConfig",
+    "apps.users.apps.UsersConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -198,13 +202,13 @@ SIMPLE_JWT = {
 
 
 # Cors
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5000",
-]
-
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://localhost:5000",
+#     "http://127.0.0.1:3000",
+#     "http://127.0.0.1:5000",
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # DRF Spectacular
 SPECTACULAR_SETTINGS = {

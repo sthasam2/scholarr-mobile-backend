@@ -113,6 +113,12 @@ class ConfirmResetPasswordSerializer(serializers.Serializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """ """
 
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField()
+
+    class Meta:
+        fields = ["username", "password"]
+
     @classmethod
     def get_token(cls, user):
         return super().get_token(user)
@@ -126,7 +132,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # exists = DbExistenceChecker().check_username_existence
         try:
             data = super().validate(attrs)
-
+            data["status"] = 200
             data["user_details"] = dict(
                 username=self.user.username,
                 email=self.user.email,

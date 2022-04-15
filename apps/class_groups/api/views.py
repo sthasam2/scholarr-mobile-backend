@@ -1,21 +1,42 @@
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from django.db.models import Q
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
 
 from apps.class_groups.api.serializers import (
     ClassGroupSerializer,
     CreateClassGroupSerializer,
+    CreateInviteClassGroupMemberSerializer,
+    CreateRequestClassGroupMemberSerializer,
     PublicClassGroupSerializer,
+    ReadClassGroupMemberSerializer,
     UpdateClassGroupSerializer,
 )
-from apps.class_groups.models import ClassGroup
+from apps.class_groups.models import ClassGroup, ClassGroupHasStudent
 from apps.class_groups.permissions import IsClassGroupOwner
-from apps.class_groups.utils import get_url_id_classgroup_or_raise
+from apps.class_groups.utils import (
+    accept_class_group_invite_request,
+    create_classgroup_invite,
+    create_classgroup_request,
+    delete_class_group_invite_request,
+    get_reqbody_classgroup_or_raise,
+    get_url_id_classgroup_invite_request_or_raise,
+    get_url_id_classgroup_or_raise,
+    reject_class_group_invite_request,
+)
 from apps.core.decorators import try_except_http_error_decorator
+from apps.core.exceptions import (
+    AlreadyMemberError,
+    AlreadyRespondedError,
+    PermissionDeniedError,
+)
 from apps.core.helpers import RequestFieldsChecker, create_200
 from apps.core.permissions import IsAuthenticatedCustom
 from apps.core.utils import CodeGenerator
+
+#########################
+#   CLASS GROUP
+#########################
 
 
 class ClassGroupViewset(ModelViewSet):
@@ -24,7 +45,7 @@ class ClassGroupViewset(ModelViewSet):
     queryset = ClassGroup.objects.all()
     permission_classes = [IsAuthenticatedCustom]
 
-    serializer = PublicClassGroupSerializer
+    serializer_class = PublicClassGroupSerializer
     creator_serializer = ClassGroupSerializer
     create_serializer = CreateClassGroupSerializer
     update_serializer = UpdateClassGroupSerializer
@@ -50,9 +71,26 @@ class ClassGroupViewset(ModelViewSet):
     def list(self, *args, **kwargs):
         """Class group get method"""
 
-        serializer = self.serializer
+        serializer = self.serializer_class
 
         class_group_instances = self.queryset
+        class_group_serializer = serializer(class_group_instances, many=True)
+
+        return Response(
+            data=dict(
+                class_groups=class_group_serializer.data,
+                count=class_group_serializer.data.__len__(),
+            ),
+            status=200,
+        )
+
+    @try_except_http_error_decorator
+    def list_self_classgroups(self, *args, **kwargs):
+        """Class group get method"""
+
+        serializer = self.serializer_class
+
+        class_group_instances = self.request.user.student_classgroup.all()
         class_group_serializer = serializer(class_group_instances, many=True)
 
         return Response(
@@ -70,7 +108,7 @@ class ClassGroupViewset(ModelViewSet):
         url_id = kwargs.get("class_group_id", None)
         class_group_instance = get_url_id_classgroup_or_raise(id=url_id)
 
-        serializer = self.serializer(class_group_instance)
+        serializer = self.serializer_class(class_group_instance)
         if class_group_instance._created_by == self.request.user:
             serializer = self.creator_serializer(class_group_instance)
 
@@ -79,6 +117,7 @@ class ClassGroupViewset(ModelViewSet):
             status=200,
         )
 
+    @extend_schema(request=create_serializer)
     @try_except_http_error_decorator
     def post(self, *args, **kwargs):
         """Create a class group"""
@@ -100,6 +139,7 @@ class ClassGroupViewset(ModelViewSet):
             status=201,
         )
 
+    @extend_schema(request=update_serializer)
     @try_except_http_error_decorator
     def update(self, *args, **kwargs):
         """Update a class group"""
@@ -128,6 +168,7 @@ class ClassGroupViewset(ModelViewSet):
             status=200,
         )
 
+    @extend_schema(request=update_serializer)
     @try_except_http_error_decorator
     def partial_update(self, *args, **kwargs):
         """Partial Update a class group"""
@@ -162,6 +203,7 @@ class ClassGroupViewset(ModelViewSet):
 
         url_id = kwargs.get("class_group_id", None)
         class_group_instance = get_url_id_classgroup_or_raise(url_id)
+        self.check_object_permissions(self.request, class_group_instance)
 
         if class_group_instance is not None:
             class_group_instance.delete()
@@ -176,7 +218,7 @@ class ClassGroupViewset(ModelViewSet):
         )
 
     @try_except_http_error_decorator
-    def set_active_inactive(self, request, *args, **kwargs):
+    def toggle_active(self, request, *args, **kwargs):
         """Turn a classgroup Active/ Inactive"""
 
         url_id = kwargs.get("class_group_id", None)
@@ -194,4 +236,187 @@ class ClassGroupViewset(ModelViewSet):
                 f"Class Group active status changed to {class_group_instance.active}",
             ),
             status=200,
+        )
+
+
+#########################
+#   MEMBERSHIP
+#########################
+
+
+class ClassGroupMemberViewset(ViewSet):
+    """Viewset for Class Group Member Logics"""
+
+    permission_classes = [IsAuthenticatedCustom]
+    serializer_class = CreateInviteClassGroupMemberSerializer
+    request_serializer = CreateRequestClassGroupMemberSerializer
+    retrieve_serializer_class = ReadClassGroupMemberSerializer
+
+    field_options = ["id", "username", "email", "classgroup_id", "classgroup_code"]
+
+    def get_permissions(self):
+        """Get permissions"""
+
+        permission_classes = [IsAuthenticatedCustom]
+
+        if self.action in ["create_invite"]:
+            permission_classes.append(IsClassGroupOwner)
+
+        return [permission() for permission in permission_classes]
+
+    @try_except_http_error_decorator
+    def list_invites_requests(self, *args, **kwargs):
+        """Get Invite or Requests"""
+
+        requesting_user = self.request.user
+
+        invites_requests_queryset = requesting_user.student_inviterequest_classgroup
+
+        invited_list = invites_requests_queryset.filter(
+            Q(invited=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        requested_list = invites_requests_queryset.filter(
+            Q(requested=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        accepted_list = invites_requests_queryset.filter(accepted=True)
+        rejected_list = invites_requests_queryset.filter(rejected=True)
+
+        invite_serializer = self.retrieve_serializer_class(invited_list, many=True)
+        request_serializer = self.retrieve_serializer_class(requested_list, many=True)
+        accepted_serializer = self.retrieve_serializer_class(accepted_list, many=True)
+        rejected_serializer = self.retrieve_serializer_class(rejected_list, many=True)
+
+        return Response(
+            dict(
+                invites=invite_serializer.data,
+                requests=request_serializer.data,
+                accepted=accepted_serializer.data,
+                rejected=rejected_serializer.data,
+            ),
+            status=200,
+        )
+
+    @extend_schema(request=serializer_class)
+    @try_except_http_error_decorator
+    def create_invite(self, *args, **kwargs):
+        """Invite a user to become a member for class"""
+
+        # serialize req body and check validity
+        serializer = self.serializer_class(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Check req body
+        r_checker = RequestFieldsChecker()
+        r_checker.check_at_least_one_field_or_raise(
+            self.request.data, self.field_options
+        )
+
+        classgroup_instance = get_reqbody_classgroup_or_raise(self.request)
+        self.check_object_permissions(self.request, classgroup_instance)
+
+        create_classgroup_invite(self.request, classgroup_instance)
+
+        # TODO create notification/email
+
+        return Response(
+            create_200(
+                201,
+                "User Invited",
+                "Successfully Invited user to join classroom",
+                "ClassGroup Invite",
+            ),
+            status=201,
+        )
+
+    @extend_schema(request=request_serializer)
+    @try_except_http_error_decorator
+    def create_request(self, *args, **kwargs):
+        """Request to become a member of classgroup"""
+
+        # serialize req body and check validity
+        serializer = self.serializer_class(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Check req body
+        r_checker = RequestFieldsChecker()
+        r_checker.check_at_least_one_field_or_raise(
+            self.request.data, self.field_options
+        )
+
+        # Get Classgroup
+        classgroup_instance = get_reqbody_classgroup_or_raise(self.request)
+
+        # create
+        create_classgroup_request(self.request, classgroup_instance)
+
+        # TODO create notification/email
+
+        return Response(
+            create_200(
+                201,
+                "Membership Requested",
+                "Successfully requested to join classroom",
+                "ClassGroup Request",
+            ),
+            status=201,
+        )
+
+    @try_except_http_error_decorator
+    def accept_invite_or_request(self, *args, **kwargs):
+        """Method for accepting invite or request"""
+
+        url_id = kwargs.get("invite_request_id", None)
+        invite_request_instance = get_url_id_classgroup_invite_request_or_raise(url_id)
+        accept_class_group_invite_request(self.request, invite_request_instance)
+
+        # TODO create email/notification
+
+        return Response(
+            create_200(
+                201,
+                "Membership Accepted",
+                "Successfully added as a member of class-group",
+                "ClassGroup Invite/Request Accept",
+            ),
+            status=201,
+        )
+
+    @try_except_http_error_decorator
+    def reject_invite_or_request(self, *args, **kwargs):
+        """Method for rejecting invite or request"""
+
+        url_id = kwargs.get("invite_request_id", None)
+        invite_request_instance = get_url_id_classgroup_invite_request_or_raise(url_id)
+        reject_class_group_invite_request(self.request, invite_request_instance)
+
+        # TODO create email/notification
+
+        return Response(
+            create_200(
+                201,
+                "Membership Rejected",
+                "Successfully rejected for membership of class-group",
+                "ClassGroup Invite/Request Reject",
+            ),
+            status=201,
+        )
+
+    @try_except_http_error_decorator
+    def delete_invite_or_request(self, *args, **kwargs):
+        """Method for rejecting invite or request"""
+
+        url_id = kwargs.get("invite_request_id", None)
+        invite_request_instance = get_url_id_classgroup_invite_request_or_raise(url_id)
+        delete_class_group_invite_request(self.request, invite_request_instance)
+
+        # TODO create email/notification
+
+        return Response(
+            create_200(
+                204,
+                "Invite/Request Deleted",
+                "Successfully deleted request for membership of class-group",
+                "ClassGroup Invite/Request Delete",
+            ),
+            status=204,
         )

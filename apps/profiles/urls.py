@@ -14,37 +14,37 @@ from .models import Profile
 
 urlpatterns = [
     path(
-        "detail/user=<slug:username>",
+        "username=<slug:username>/detail",
         ProfileDetailView.as_view(),
         name="profile-detail",
     ),
     path(
-        "summary/user=<slug:username>",
+        "username=<slug:username>/summary",
         ProfileSummaryView.as_view(),
         name="profile-summary",
     ),
     path(
-        "update/user=<slug:username>",
+        "username=<slug:username>/update",
         UpdateProfileView.as_view(),
         name="update-profile",
     ),
     path(
-        "enable_disable_persona/user=<slug:username>",
+        "username=<slug:username>/enable_disable_persona",
         EnableDisablePersonaView.as_view(),
         name="update-profile-use-persona",
     ),
     path(
-        "set_persona/user=<slug:username>",
+        "username=<slug:username>/set_persona",
         SetPersonaView.as_view(),
         name="update-profile-use-persona",
     ),
     path(
-        "change_private/user=<slug:username>",
+        "username=<slug:username>/change_private",
         ChangePrivateProfileView.as_view(),
         name="update-profile",
     ),
     path(
-        "upload_images/user=<slug:username>",
+        "username=<slug:username>/upload_images",
         ProfileImageUploadView.as_view(),
         name="update-profile",
     ),

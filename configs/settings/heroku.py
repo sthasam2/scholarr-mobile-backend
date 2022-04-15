@@ -55,14 +55,16 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "apps.users.apps.UsersConfig",
     "apps.activities.apps.ActivitiesConfig",
     "apps.class_groups.apps.ClassGroupsConfig",
     "apps.classrooms.apps.ClassroomsConfig",
     "apps.classroom_contents.apps.ClassroomContentsConfig",
     "apps.core.apps.CoreConfig",
-    "apps.schedules.apps.SchedulesConfig",
+    "apps.plagiarism_detector.apps.PlagiarismDetectorConfig",
+    "apps.planners.apps.PlannersConfig",
     "apps.profiles.apps.ProfilesConfig",
+    "apps.schedules.apps.SchedulesConfig",
+    "apps.users.apps.UsersConfig",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

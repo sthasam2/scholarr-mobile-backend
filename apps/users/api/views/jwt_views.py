@@ -27,6 +27,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer.is_valid(raise_exception=True)
         context = serializer.validated_data
 
+
         if not context["user_details"]["email_verified"]:
 
             raise CustomAuthenticationFailed(

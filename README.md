@@ -10,7 +10,7 @@ Find the Changlogs @[docs/changelogs.md](docs/changelogs.md)
 
 ## Dependedencies
 
-### **Main Dependencies**
+### Main Dependencies
 
 * **Python 3.8**
 * **pip** ( python default package manager)
@@ -19,7 +19,7 @@ Find the Changlogs @[docs/changelogs.md](docs/changelogs.md)
 
 ## Installation
 
-### **MANUAL SETUP**
+### Manual Setup
 
 #### Setup a virtuial environment
 
@@ -29,21 +29,21 @@ Find the Changlogs @[docs/changelogs.md](docs/changelogs.md)
 
 #### Activate virtualenv
 
-* Windows
+##### Windows
 
-```powershell
+```ps1
 .venv\scripts\activate
 ```
 
-* Linux
+##### Linux
 
-```BASH
+```sh
 source .venv/bin/activate
 ```
 
 #### After all the mentioned dependencies are installed, run command
 
-```python
+```sh
 python -m poetry install
 ```
 
@@ -51,7 +51,7 @@ This will install all the required dependencies for the project using the **poet
   
 To check more dependencies enter command
 
-```python
+```sh
 poetry show
 ```
 
@@ -75,15 +75,15 @@ Open postgres terminal
 
 ![SQL Shell Databases](docs/images/databases.png)
 
-if `bumblebee` database appears, the database is set up.
+if `[database_name]` database appears, the database is set up.
 
 ### Linux
 
 1. After installation, open postgres in terminal using
 
-```BASH
-   sudo -u postgres psql
-   ```
+```sh
+sudo -u postgres psql
+```
 
 This opens the postgres shell using user *postgres*.
 
@@ -93,21 +93,21 @@ This opens the postgres shell using user *postgres*.
 
 ![SQL Shell Databases](docs/images/databases.png)
 
-if `bumblebee` database appears, the database is set up.
+if `[database_name]` database appears, the database is set up.
 
 ## Create Django Migrations
 
-> **REMEMBER TO ACTIVATE VIRTUAL ENVIRONMENT**
+> *REMEMBER TO ACTIVATE VIRTUAL ENVIRONMENT*
 
 In order to setup django app tables, migations must be made. it can be done simply by the commands
 
-```BASH
+```sh
 python manage.py makemigrations
 ```
 
 To apply migrations, use command.
 
-```BASH
+```sh
 python manage.py migrate
 ```
 
@@ -115,6 +115,6 @@ Then the migrations should be applied and the database is ready.
 
 > *Note sometimes migrations may not work, and in such cases makemigrations should explicitly mention the apps explicitly like*
 
-```shell
+```sh
 python manage.py makemigrations activities, admin, auth, buzzes, comments, connections, contenttypes, feeds, notifications, profiles, sessions, token_blacklist, user
 ```

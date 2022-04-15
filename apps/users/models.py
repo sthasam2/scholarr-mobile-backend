@@ -43,7 +43,7 @@ class CustomUser(AbstractBaseUser):
         verbose_name_plural = "Custom Users"
 
     def __str__(self):
-        return self.email
+        return f"{self.email}(id={self.id})"
 
     def has_perm(self, perm, obj=None):
         return True

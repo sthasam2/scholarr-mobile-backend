@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.schedules.models import *
+
+admin.site.register(Schedule)

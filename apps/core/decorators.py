@@ -23,9 +23,16 @@ def try_except_http_error_decorator(func, *args, **kwargs):
         # 400: Bad Request, No resource
         except (
             AlreadyEmailVerifiedError,
+            AlreadyInvitedError,
+            AlreadyMemberError,
+            AlreadyRespondedError,
+            AlreadyRequestedError,
+            AlreadyTeacherError,
             ExpiredError,
             ExtraFieldsError,
+            LimitExceededError,
             MissingFieldsError,
+            MultipleInstancesError,
             NoneExistenceError,
             PreExistenceError,
             UrlParameterError,
@@ -70,10 +77,7 @@ def try_except_http_error_decorator(func, *args, **kwargs):
         # 500: Server Error
         except Exception as error:
             return Response(
-                create_500(
-                    verbose=error.args[0] or None,
-                    cause=error.default_detail,
-                ),
+                create_500(verbose=error.args[0] or None, cause="Internal Serve error"),
                 status=500,
             )
 
