@@ -12,7 +12,11 @@ from apps.class_groups.api.serializers import (
     ReadClassGroupMemberSerializer,
     UpdateClassGroupSerializer,
 )
-from apps.class_groups.models import ClassGroup, ClassGroupHasStudent
+from apps.class_groups.models import (
+    ClassGroup,
+    ClassGroupHasStudent,
+    ClassGroupStudentInviteOrRequest,
+)
 from apps.class_groups.permissions import IsClassGroupOwner
 from apps.class_groups.utils import (
     accept_class_group_invite_request,
@@ -33,6 +37,7 @@ from apps.core.exceptions import (
 from apps.core.helpers import RequestFieldsChecker, create_200
 from apps.core.permissions import IsAuthenticatedCustom
 from apps.core.utils import CodeGenerator
+from apps.users.api.serializers import UserSerializer
 
 #########################
 #   CLASS GROUP
@@ -90,13 +95,24 @@ class ClassGroupViewset(ModelViewSet):
 
         serializer = self.serializer_class
 
-        class_group_instances = self.request.user.student_classgroup.all()
-        class_group_serializer = serializer(class_group_instances, many=True)
+        student_class_group_instances = [
+            student_classgroup.classgroup
+            for student_classgroup in self.request.user.student_classgroup.all()
+        ]
+        created_class_group_instances = self.request.user.created_classgroup.all()
+
+        created_class_group_serializer = serializer(
+            created_class_group_instances, many=True
+        )
+        student_class_group_serializer = serializer(
+            student_class_group_instances, many=True
+        )
 
         return Response(
             data=dict(
-                class_groups=class_group_serializer.data,
-                count=class_group_serializer.data.__len__(),
+                student_classgroups=student_class_group_serializer.data,
+                created_classgroups=created_class_group_serializer.data,
+                # count=class_group_serializer.data.__len__(),
             ),
             status=200,
         )
@@ -251,6 +267,7 @@ class ClassGroupMemberViewset(ViewSet):
     serializer_class = CreateInviteClassGroupMemberSerializer
     request_serializer = CreateRequestClassGroupMemberSerializer
     retrieve_serializer_class = ReadClassGroupMemberSerializer
+    user_serializer_class = UserSerializer
 
     field_options = ["id", "username", "email", "classgroup_id", "classgroup_code"]
 
@@ -292,6 +309,64 @@ class ClassGroupMemberViewset(ViewSet):
                 requests=request_serializer.data,
                 accepted=accepted_serializer.data,
                 rejected=rejected_serializer.data,
+            ),
+            status=200,
+        )
+
+    @try_except_http_error_decorator
+    def list_classgroup_invites_requests(self, *args, **kwargs):
+        """Get Invite or Requests"""
+
+        requesting_user = self.request.user
+        url_classgroup_id = kwargs.get("classgroup_id", None)
+        classgroup_instance = get_url_id_classgroup_or_raise(url_classgroup_id)
+
+        invites_requests_queryset = (
+            classgroup_instance.classgroup_inviterequest_student.all()
+        )
+
+        invited_list = invites_requests_queryset.filter(
+            Q(invited=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        requested_list = invites_requests_queryset.filter(
+            Q(requested=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        accepted_list = invites_requests_queryset.filter(accepted=True)
+        rejected_list = invites_requests_queryset.filter(rejected=True)
+
+        invite_serializer = self.retrieve_serializer_class(invited_list, many=True)
+        request_serializer = self.retrieve_serializer_class(requested_list, many=True)
+        accepted_serializer = self.retrieve_serializer_class(accepted_list, many=True)
+        rejected_serializer = self.retrieve_serializer_class(rejected_list, many=True)
+
+        return Response(
+            dict(
+                invites=invite_serializer.data,
+                requests=request_serializer.data,
+                accepted=accepted_serializer.data,
+                rejected=rejected_serializer.data,
+            ),
+            status=200,
+        )
+
+    @try_except_http_error_decorator
+    def list_classgroup_members(self, *args, **kwargs):
+        """Get Members"""
+
+        requesting_user = self.request.user
+        url_classgroup_id = kwargs.get("classgroup_id", None)
+        classgroup_instance = get_url_id_classgroup_or_raise(url_classgroup_id)
+
+        member_list = [
+            classgroup_student.student
+            for classgroup_student in classgroup_instance.classgroup_student.all()
+        ]
+
+        member_serializer = self.user_serializer_class(member_list, many=True)
+
+        return Response(
+            dict(
+                members=member_serializer.data,
             ),
             status=200,
         )

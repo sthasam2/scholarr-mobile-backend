@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scholarr"
-version = "0.1.4"
+version = "0.2"
 description = "Backend for Scholarr"
 authors = ["Sambeg Shrestha <sthasam2@gmail.com>"]
 license = "GNU v.3."
@@ -20,6 +20,10 @@ psycopg2 = "^2.9.3"
 django-heroku = "^0.3.1"
 drf-spectacular = "^0.21.2"
 filetype = "^1.0.10"
+plotly = "^5.7.0"
+pypandoc = "^1.7.5"
+"pdfminer.six" = "^20220506"
+joblib = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

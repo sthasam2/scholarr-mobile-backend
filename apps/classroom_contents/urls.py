@@ -20,7 +20,7 @@ classwork_urls = [
     ## Classwork
     path(
         "classroom_id=<int:classroom_id>/classwork/list",
-        ClassroomClassworkViewSet.as_view({"get": "list"}),
+        ClassroomClassworkViewSet.as_view({"get": "list_classworks"}),
         name="list-classwork",
     ),  # list
     path(
@@ -49,7 +49,7 @@ resource_urls = [
     # ## Resource
     path(
         "classroom_id=<int:classroom_id>/resource/list",
-        ClassroomResourceViewSet.as_view({"get": "list"}),
+        ClassroomResourceViewSet.as_view({"get": "list_resources"}),
         name="list-resource",
     ),  # list
     path(
@@ -79,12 +79,12 @@ submission_urls = [
     ## Submissions
     path(
         "classwork_id=<int:classwork_id>/submission/self/list",
-        ClassworkSubmissionViewSet.as_view({"get": "list"}),
+        ClassworkSubmissionViewSet.as_view({"get": "list_self_submissions"}),
         name="list-submission",
     ),  # list
     path(
         "classwork_id=<int:classwork_id>/submission/list",
-        ClassworkSubmissionViewSet.as_view({"get": "list"}),
+        ClassworkSubmissionViewSet.as_view({"get": "list_submissions"}),
         name="list-submission",
     ),  # list
     path(

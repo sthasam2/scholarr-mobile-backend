@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf.urls.static import static
 
-urlpatterns = [
+from .definitions import *
+
+media_url = static(MEDIA_URL, document_root=MEDIA_ROOT)
+
+app_urls = [
     path("admin/", admin.site.urls),
     path("api/", include("apps.core.urls"), name="core"),
     path("api/auth/", include("apps.users.urls"), name="users"),
@@ -28,5 +33,10 @@ urlpatterns = [
         include("apps.classroom_contents.urls"),
         name="classroom_contents",
     ),
+    path(
+        "api/plagiarism/", include("apps.plagiarism_detector.urls"), name="plagiarism"
+    ),
     path("api/schedule/", include("apps.schedules.urls"), name="schedule"),
 ]
+
+urlpatterns = media_url + app_urls

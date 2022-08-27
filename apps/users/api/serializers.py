@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from apps.core.exceptions import CustomAuthenticationFailed
+from apps.core.exceptions import CustomAuthenticationFailed, NotAuthenticatedError
 from apps.core.helpers import create_400
 
 from ..models import CustomUser
@@ -142,6 +142,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
             return data
 
+        except NotAuthenticatedError as error:
+            raise CustomAuthenticationFailed(
+                cause="Autentication",
+                status_code=404,
+                message="Invalid username or password",
+                verbose=f"Account with given credentials does not exist!",
+            )
+
         except AuthenticationFailed as error:
             raise CustomAuthenticationFailed(
                 cause="Autentication",
@@ -154,6 +162,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 ##########################
 #          USER
 ##########################
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    """
+    Serializers for CustomUser model
+    """
+
+    class Meta:
+        model = CustomUser
+        fields = ["username", "email", "active", "id"]
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -2,6 +2,7 @@ from rest_framework.exceptions import (
     AuthenticationFailed,
     NotAuthenticated,
     PermissionDenied,
+    ValidationError,
 )
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -48,8 +49,23 @@ def try_except_http_error_decorator(func, *args, **kwargs):
                 status=error.status_code,
             )
 
+        except ValidationError as error:
+            return Response(
+                create_400(
+                    status=error.status_code,
+                    message=error.default_detail,
+                    verbose=error.detail,
+                ),
+                status=error.status_code,
+            )
+
         # 401: Unauthorized/ Forbidden
-        except (PermissionDenied, NotAuthenticated, AuthenticationFailed) as error:
+        except (
+            PermissionDenied,
+            NotAuthenticated,
+            AuthenticationFailed,
+            ValidationError,
+        ) as error:
             return Response(
                 create_400(
                     status=error.status_code,

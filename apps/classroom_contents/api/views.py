@@ -7,9 +7,12 @@ from rest_framework.viewsets import ModelViewSet
 from apps.classroom_contents.api.serializers import *
 from apps.classroom_contents.models import (
     Classwork,
+    ClassworkHasAttachment,
     ClassworkHasSubmission,
     Resource,
+    ResourceHasAttachment,
     Submission,
+    SubmissionHasAttachment,
 )
 from apps.classroom_contents.permissions import (
     IsSubmissionOwner,
@@ -27,6 +30,7 @@ from apps.classrooms.utils import get_url_id_classroom_or_raise
 from apps.core.decorators import try_except_http_error_decorator
 from apps.core.helpers import RequestFieldsChecker, create_200
 from apps.core.permissions import IsAuthenticatedCustom
+from apps.classrooms.api.serializers import ClassroomOnlySerializer
 
 
 class ClassroomContentView(APIView):
@@ -52,24 +56,21 @@ class ClassroomContentView(APIView):
             resource_list = [
                 relation.resource
                 for relation in ClassroomHasResource.objects.filter(
-                    resource=classroom_instance
+                    classroom=classroom_instance
                 )
             ]
 
-            classwork_instances = Classwork.objects.filter(id__in=classwork_list)
-            resource_instances = Resource.objects.filter(id__in=resource_list)
-
             classwork_serializer = self.classwork_serializer_class(
-                classwork_instances, many=True
+                classwork_list, many=True
             )
             resource_serializer = self.resource_serializer_class(
-                resource_instances, many=True
+                resource_list, many=True
             )
 
             return Response(
                 data=dict(
-                    classwork=classwork_serializer.data,
-                    resource=resource_serializer.data,
+                    classworks=classwork_serializer.data,
+                    resources=resource_serializer.data,
                 ),
                 status=200,
             )
@@ -81,6 +82,8 @@ class ClassroomClassworkViewSet(ModelViewSet):
     serializer_class = ReadClassworkSerializer
     create_serializer_class = CreateClassworkSerializer
     update_serializer_class = UpdateClassworkSerializer
+    classroom_serializer = ClassroomOnlySerializer
+    attachment_serializer = AttachmentSerializer
 
     def get_permissions(self):
         permission_classes = [IsAuthenticatedCustom]
@@ -137,14 +140,28 @@ class ClassroomClassworkViewSet(ModelViewSet):
 
         if url_id_classwork:
             classwork_instance = get_url_id_classwork_or_raise(url_id_classwork)
-            classwork_classroom = classwork_instance.classwork_classroom.classroom
+            classwork_classroom = classwork_instance.classwork_classroom.get().classroom
 
             self.check_object_permissions(self.request, classwork_classroom)
+
+            if classwork_instance.attachments == True:
+                attachment_list = ClassworkHasAttachment.objects.filter(
+                    classwork=classwork_instance
+                )
+                attachments = [item.attachment for item in attachment_list]
+                attachment_serializer = self.attachment_serializer(
+                    attachments, many=True
+                )
 
             serializer = self.serializer_class(classwork_instance)
 
             return Response(
-                data=serializer.data,
+                data=dict(
+                    classwork=serializer.data,
+                    attachments=attachment_serializer.data
+                    if classwork_instance.attachments
+                    else [],
+                ),
                 status=200,
             )
 
@@ -156,15 +173,13 @@ class ClassroomClassworkViewSet(ModelViewSet):
 
         if url_classroom_id:
             classroom_instance = get_url_id_classroom_or_raise(url_classroom_id)
-            classroom_classwork = (
-                ClassroomHasClasswork.objects.filter(classroom=classroom_instance)
-                .values("classwork", flat=True)
-                .order_by("id")
+            classroom_classwork = ClassroomHasClasswork.objects.filter(
+                classroom=classroom_instance
             )
 
-            classworks = Classwork.objects.filter(id__in=classroom_classwork)
+            classwork_list = [item.classwork for item in classroom_classwork]
 
-            serializer = self.serializer_class(classworks, many=True)
+            serializer = self.serializer_class(classwork_list, many=True)
             classroom_serializer = self.classroom_serializer(classroom_instance)
 
             return Response(
@@ -232,6 +247,8 @@ class ClassroomResourceViewSet(ModelViewSet):
     serializer_class = ReadResourceSerializer
     create_serializer_class = CreateResourceSerializer
     update_serializer_class = UpdateResourceSerializer
+    classroom_serializer = ClassroomOnlySerializer
+    attachment_serializer = AttachmentSerializer
 
     def get_permissions(self):
         permission_classes = [IsAuthenticatedCustom]
@@ -259,13 +276,13 @@ class ClassroomResourceViewSet(ModelViewSet):
             serializer = self.create_serializer_class(data=self.request.data)
             serializer.is_valid(raise_exception=True)
 
-            created_classwork = serializer.save(_created_by=requesting_user)
+            created_resource = serializer.save(_created_by=requesting_user)
 
-            ClassroomHasClasswork.objects.create(
-                classroom=classroom_instance, classwork=created_classwork
+            ClassroomHasResource.objects.create(
+                classroom=classroom_instance, resource=created_resource
             )
 
-            check_and_handle_attachments(self.request, created_classwork)
+            check_and_handle_attachments(self.request, created_resource)
 
             # TODO send Email/Notification
 
@@ -273,8 +290,8 @@ class ClassroomResourceViewSet(ModelViewSet):
                 create_200(
                     201,
                     "Created",
-                    "Classwork Created",
-                    dict(classwork=serializer.data),
+                    "Resource Created",
+                    dict(resource=serializer.data),
                 ),
                 status=201,
             )
@@ -288,14 +305,28 @@ class ClassroomResourceViewSet(ModelViewSet):
 
         if url_id_resource:
             resource_instance = get_url_id_resource_or_raise(url_id_resource)
-            resource_classroom = resource_instance.resource_classroom.classroom
+            resource_classroom = resource_instance.resource_classroom.get().classroom
 
             self.check_object_permissions(self.request, resource_classroom)
+
+            if resource_instance.attachments == True:
+                attachment_list = ResourceHasAttachment.objects.filter(
+                    resource=resource_instance
+                )
+                attachments = [item.attachment for item in attachment_list]
+                attachment_serializer = self.attachment_serializer(
+                    attachments, many=True
+                )
 
             serializer = self.serializer_class(resource_instance)
 
             return Response(
-                data=serializer.data,
+                data=dict(
+                    resource=serializer.data,
+                    attachments=attachment_serializer.data
+                    if resource_instance.attachments
+                    else [],
+                ),
                 status=200,
             )
 
@@ -307,15 +338,13 @@ class ClassroomResourceViewSet(ModelViewSet):
 
         if url_classroom_id:
             classroom_instance = get_url_id_classroom_or_raise(url_classroom_id)
-            classroom_resource = (
-                ClassroomHasResource.objects.filter(classroom=classroom_instance)
-                .values("resource", flat=True)
-                .order_by("id")
+            classroom_resource = ClassroomHasResource.objects.filter(
+                classroom=classroom_instance
             )
 
-            resources = Classwork.objects.filter(id__in=classroom_resource)
+            resource_list = [item.resource for item in classroom_resource]
 
-            serializer = self.serializer_class(resources, many=True)
+            serializer = self.serializer_class(resource_list, many=True)
             classroom_serializer = self.classroom_serializer(classroom_instance)
 
             return Response(
@@ -382,6 +411,7 @@ class ClassworkSubmissionViewSet(ModelViewSet):
     create_serializer_class = CreateSubmissionSerializer
     update_serializer_class = UpdateSubmissionSerializer
     classwork_serializer = ReadClassworkSerializer
+    attachment_serializer = AttachmentSerializer
 
     def get_permissions(self):
         permission_classes = [IsAuthenticatedCustom]
@@ -406,11 +436,11 @@ class ClassworkSubmissionViewSet(ModelViewSet):
         """ """
 
         requesting_user = self.request.user
-        url_classwork_id = kwargs.get("classroom_id", None)
+        url_classwork_id = kwargs.get("classwork_id", None)
 
         if url_classwork_id:
             classwork_instance = get_url_id_classwork_or_raise(url_classwork_id)
-            classwork_classroom = classwork_instance.classwork_classroom.classroom
+            classwork_classroom = classwork_instance.classwork_classroom.get().classroom
 
             self.check_object_permissions(self.request, classwork_classroom)
 
@@ -447,10 +477,24 @@ class ClassworkSubmissionViewSet(ModelViewSet):
             submission_instance = get_url_id_submission_or_raise(url_id_submission)
             self.check_object_permissions(self.request, submission_instance)
 
+            if submission_instance.attachments == True:
+                attachment_list = SubmissionHasAttachment.objects.filter(
+                    submission=submission_instance
+                )
+                attachments = [item.attachment for item in attachment_list]
+                attachment_serializer = self.attachment_serializer(
+                    attachments, many=True
+                )
+
             serializer = self.serializer_class(submission_instance)
 
             return Response(
-                data=serializer.data,
+                data=dict(
+                    submission=serializer.data,
+                    attachments=attachment_serializer.data
+                    if submission_instance.attachments
+                    else [],
+                ),
                 status=200,
             )
 
@@ -462,15 +506,14 @@ class ClassworkSubmissionViewSet(ModelViewSet):
 
         if url_classwork_id:
             classwork_instance = get_url_id_classwork_or_raise(url_classwork_id)
-            classwork_submissions = (
-                ClassworkHasSubmission.objects.filter(classwork=classwork_instance)
-                .values("submission", flat=True)
-                .order_by("id")
+            classwork_submissions = ClassworkHasSubmission.objects.filter(
+                classwork=classwork_instance
             )
 
-            submissions = Submission.objects.filter(id__in=classwork_submissions)
+            # submissions = Submission.objects.filter(id__in=classwork_submissions)
+            submission_list = [item.submission for item in classwork_submissions]
 
-            serializer = self.serializer_class(submissions, many=True)
+            serializer = self.serializer_class(submission_list, many=True)
             classwork_serializer = self.classwork_serializer(classwork_instance)
 
             return Response(
@@ -491,10 +534,16 @@ class ClassworkSubmissionViewSet(ModelViewSet):
         if url_classwork_id:
             classwork_instance = get_url_id_classwork_or_raise(url_classwork_id)
             classwork_submissions = ClassworkHasSubmission.objects.filter(
-                Q(classwork=classwork_instance) & Q(_created_by=requesting_user)
+                classwork=classwork_instance
             ).all()
 
-            serializer = self.serializer_class(classwork_submissions, many=True)
+            submission_id_list = [item.submission.id for item in classwork_submissions]
+
+            self_submissions = Submission.objects.filter(
+                Q(id__in=submission_id_list) & Q(_created_by=requesting_user)
+            )
+
+            serializer = self.serializer_class(self_submissions, many=True)
             classwork_serializer = self.classwork_serializer(classwork_instance)
 
             return Response(

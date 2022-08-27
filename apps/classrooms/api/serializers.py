@@ -44,6 +44,8 @@ class PublicClassroomSerializer(serializers.ModelSerializer):
             "archive",
             "id",
             "_created_date",
+            "_modified_date",
+            "_created_by",
         )
 
 

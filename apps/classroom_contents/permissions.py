@@ -32,7 +32,7 @@ class IsSubmissionOwnerOrClassroomOwnerOrTeacher(BasePermission):
         classroom_teachers = [
             relation.teacher
             for relation in ClassroomHasTeacher.objects.filter(
-                classroom=classwork_classroom
+                classroom=classwork_classroom.classroom
             )
         ]
 

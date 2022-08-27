@@ -1,5 +1,13 @@
 # Changelogs
 
+## v.0.2: Additions, Modification and Fixes
+
+15 Apr, 2022
+
+1. Add Plagiarism Detection
+2. Modify setting configs, some app logics, Migrations, etc.
+3. Bug Fixes
+
 ## v.0.1.5: (Unstable) Additions, Modification and Fixes 
 
 15 Apr, 2022

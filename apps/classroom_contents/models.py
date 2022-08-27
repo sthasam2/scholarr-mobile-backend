@@ -55,6 +55,7 @@ class Classwork(AbstractContent):
     content_type = models.CharField(
         max_length=3, default="C_D", choices=ClassworkChoices.choices
     )
+    deadline = models.DateTimeField(null=True)
     weightage = models.PositiveBigIntegerField(default=100)
     attachments = models.BooleanField(default=False)
 
@@ -104,7 +105,7 @@ class Submission(models.Model):
     attachments = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f"{self.type} -> {self.title}"
+        return f"{self.id}: {self._created_by} -> {self.answer}"
 
 
 class Attachment(models.Model):
@@ -112,11 +113,13 @@ class Attachment(models.Model):
 
     _created_at = models.DateTimeField(auto_now_add=True)
 
-    attachment = models.FileField(upload_to="%(app_name)s_files/")
+    attachment = models.FileField(upload_to="attachments/")
     mime_type = models.CharField(max_length=100, null=True, blank=True)
+    tokenized_dump = models.CharField(max_length=1000, null=True, blank=True)
+    model_dump = models.CharField(max_length=1000, null=True, blank=True)
 
     def __str__(self) -> str:
-        return self.file.path
+        return self.attachment.path
 
 
 #########################

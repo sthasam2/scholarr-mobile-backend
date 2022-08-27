@@ -99,7 +99,7 @@ class RegisterView(CreateAPIView):
                 create_200(
                     201,
                     "Created",
-                    f"A user account with email `{email}` and username `{username}` created!",
+                    f"Account with email `{email}` and username `{username}` created!\nPlease verify email to login.",
                 ),
                 status=status.HTTP_201_CREATED,
             )

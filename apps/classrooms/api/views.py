@@ -116,10 +116,8 @@ class ClassroomViewset(ModelViewSet):
 
         return Response(
             data=dict(
-                classrooms=dict(
-                    teaching=teaching_classroom_serializer.data,
-                    studying=studying_classroom_serializer.data,
-                )
+                teaching_classrooms=teaching_classroom_serializer.data,
+                studying_classrooms=studying_classroom_serializer.data,
             ),
             status=200,
         )
@@ -275,150 +273,176 @@ class ClassroomUserViewSet(ModelViewSet):
     def detail_invite_request(self, *args, **kwargs):
         """Get Details of Invite or Request"""
 
-        invite_id = kwargs.get("invite_id", None)
-        request_id = kwargs.get("request_id", None)
+        invite_request_id = kwargs.get("invite_request_id", None)
+        # request_id = kwargs.get("request_id", None)
 
-        if invite_id:
-            invite_instance = ClassroomInviteOrRequest.objects.get(id=invite_id)
-            self.check_object_permissions(self.request, invite_instance)
-            serializer = self.retrieve_serializer_class(invite_instance)
+        if invite_request_id:
+            invite_request_instance = ClassroomInviteOrRequest.objects.get(
+                id=invite_request_id
+            )
+            self.check_object_permissions(self.request, invite_request_instance)
+            serializer = self.retrieve_serializer_class(invite_request_instance)
 
             return Response(
                 data=serializer.data,
                 status=200,
             )
 
-        if request_id:
-            request_instance = ClassroomInviteOrRequest.objects.get(id=request_id)
-            self.check_object_permissions(self.request, request_instance)
-            serializer = self.retrieve_serializer_class(request_instance)
+        # if request_id:
+        #     request_instance = ClassroomInviteOrRequest.objects.get(id=request_id)
+        #     self.check_object_permissions(self.request, request_instance)
+        #     serializer = self.retrieve_serializer_class(request_instance)
 
-            return Response(
-                data=serializer.data,
-                status=200,
-            )
+        #     return Response(
+        #         data=serializer.data,
+        #         status=200,
+        #     )
 
     @try_except_http_error_decorator
     def list_invites_requests(self, *args, **kwargs):
         """Get Invite or Requests"""
 
         requesting_user = self.request.user
-        target_type = self.kwargs.get("target_type", None)
+        # target_type = self.kwargs.get("target_type", None)
 
-        if target_type and target_type.upper() == "S":
+        # if target_type and target_type.upper() == "S":
 
-            # Query
-            student_ir_queryset = requesting_user.student_inviterequest_classroom.all()
+        # Query
+        student_ir_queryset = requesting_user.student_inviterequest_classroom.all()
 
-            #  Filter
-            student_invited_list = student_ir_queryset.filter(
-                Q(invited=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            student_requested_list = student_ir_queryset.filter(
-                Q(requested=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            student_accepted_list = student_ir_queryset.filter(accepted=True)
-            student_rejected_list = student_ir_queryset.filter(rejected=True)
+        #  Filter
+        student_invited_list = student_ir_queryset.filter(
+            Q(invited=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        student_requested_list = student_ir_queryset.filter(
+            Q(requested=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        student_accepted_list = student_ir_queryset.filter(accepted=True)
+        student_rejected_list = student_ir_queryset.filter(rejected=True)
 
-            # Serializer
-            student_invite_serializer = self.retrieve_serializer_class(
-                student_invited_list, many=True
-            )
-            student_request_serializer = self.retrieve_serializer_class(
-                student_requested_list, many=True
-            )
-            student_accepted_serializer = self.retrieve_serializer_class(
-                student_accepted_list, many=True
-            )
-            student_rejected_serializer = self.retrieve_serializer_class(
-                student_rejected_list, many=True
-            )
+        # Serializer
+        student_invite_serializer = self.retrieve_serializer_class(
+            student_invited_list, many=True
+        )
+        student_request_serializer = self.retrieve_serializer_class(
+            student_requested_list, many=True
+        )
+        student_accepted_serializer = self.retrieve_serializer_class(
+            student_accepted_list, many=True
+        )
+        student_rejected_serializer = self.retrieve_serializer_class(
+            student_rejected_list, many=True
+        )
 
-            return Response(
-                dict(
-                    student=dict(
-                        invites=student_invite_serializer.data,
-                        requests=student_request_serializer.data,
-                        accepted=student_accepted_serializer.data,
-                        rejected=student_rejected_serializer.data,
-                    ),
+        # return Response(
+        #     dict(
+        # student=dict(
+        #     invites=student_invite_serializer.data,
+        #     requests=student_request_serializer.data,
+        #     accepted=student_accepted_serializer.data,
+        #     rejected=student_rejected_serializer.data,
+        # ),
+        #     ),
+        #     status=200,
+        # )
+
+        # if target_type and target_type.upper() == "T":
+        teacher_ir_queryset = requesting_user.teacher_inviterequest_classroom.all()
+
+        teacher_invited_list = teacher_ir_queryset.filter(
+            Q(invited=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        teacher_requested_list = teacher_ir_queryset.filter(
+            Q(requested=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        teacher_accepted_list = teacher_ir_queryset.filter(accepted=True)
+        teacher_rejected_list = teacher_ir_queryset.filter(rejected=True)
+
+        teacher_invite_serializer = self.retrieve_serializer_class(
+            teacher_invited_list, many=True
+        )
+        teacher_request_serializer = self.retrieve_serializer_class(
+            teacher_requested_list, many=True
+        )
+        teacher_accepted_serializer = self.retrieve_serializer_class(
+            teacher_accepted_list, many=True
+        )
+        teacher_rejected_serializer = self.retrieve_serializer_class(
+            teacher_rejected_list, many=True
+        )
+
+        # return Response(
+        #     dict(
+        #         teacher=dict(
+        #             invites=teacher_invite_serializer.data,
+        #             requests=teacher_request_serializer.data,
+        #             accepted=teacher_accepted_serializer.data,
+        #             rejected=teacher_rejected_serializer.data,
+        #         ),
+        #     ),
+        #     status=200,
+        # )
+
+        # if target_type and target_type.upper() == "C":
+        classgroup_ir_queryset = requesting_user.created_classroom_inviterequest
+
+        classgroup_invited_list = classgroup_ir_queryset.filter(
+            Q(invited=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        classgroup_requested_list = classgroup_ir_queryset.filter(
+            Q(requested=True) & Q(accepted=False) & Q(rejected=False)
+        )
+        classgroup_accepted_list = classgroup_ir_queryset.filter(accepted=True)
+        classgroup_rejected_list = classgroup_ir_queryset.filter(rejected=True)
+
+        classgroup_invite_serializer = self.retrieve_serializer_class(
+            classgroup_invited_list, many=True
+        )
+        classgroup_request_serializer = self.retrieve_serializer_class(
+            classgroup_requested_list, many=True
+        )
+        classgroup_accepted_serializer = self.retrieve_serializer_class(
+            classgroup_accepted_list, many=True
+        )
+        classgroup_rejected_serializer = self.retrieve_serializer_class(
+            classgroup_rejected_list, many=True
+        )
+
+        # return Response(
+        #     dict(
+        #         classgroup=dict(
+        #             invites=classgroup_invite_serializer.data,
+        #             requests=classgroup_request_serializer.data,
+        #             accepted=classgroup_accepted_serializer.data,
+        #             rejected=classgroup_rejected_serializer.data,
+        #         ),
+        #     ),
+        #     status=200,
+        # )
+
+        return Response(
+            dict(
+                student=dict(
+                    invites=student_invite_serializer.data,
+                    requests=student_request_serializer.data,
+                    accepted=student_accepted_serializer.data,
+                    rejected=student_rejected_serializer.data,
                 ),
-                status=200,
-            )
-
-        if target_type and target_type.upper() == "T":
-            teacher_ir_queryset = requesting_user.teacher_inviterequest_classroom.all()
-
-            teacher_invited_list = teacher_ir_queryset.filter(
-                Q(invited=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            teacher_requested_list = teacher_ir_queryset.filter(
-                Q(requested=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            teacher_accepted_list = teacher_ir_queryset.filter(accepted=True)
-            teacher_rejected_list = teacher_ir_queryset.filter(rejected=True)
-
-            teacher_invite_serializer = self.retrieve_serializer_class(
-                teacher_invited_list, many=True
-            )
-            teacher_request_serializer = self.retrieve_serializer_class(
-                teacher_requested_list, many=True
-            )
-            teacher_accepted_serializer = self.retrieve_serializer_class(
-                teacher_accepted_list, many=True
-            )
-            teacher_rejected_serializer = self.retrieve_serializer_class(
-                teacher_rejected_list, many=True
-            )
-
-            return Response(
-                dict(
-                    teacher=dict(
-                        invites=teacher_invite_serializer.data,
-                        requests=teacher_request_serializer.data,
-                        accepted=teacher_accepted_serializer.data,
-                        rejected=teacher_rejected_serializer.data,
-                    ),
+                teacher=dict(
+                    invites=teacher_invite_serializer.data,
+                    requests=teacher_request_serializer.data,
+                    accepted=teacher_accepted_serializer.data,
+                    rejected=teacher_rejected_serializer.data,
                 ),
-                status=200,
-            )
-
-        if target_type and target_type.upper() == "C":
-            classgroup_ir_queryset = requesting_user.created_classroom_inviterequest
-
-            classgroup_invited_list = classgroup_ir_queryset.filter(
-                Q(invited=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            classgroup_requested_list = classgroup_ir_queryset.filter(
-                Q(requested=True) & Q(accepted=False) & Q(rejected=False)
-            )
-            classgroup_accepted_list = classgroup_ir_queryset.filter(accepted=True)
-            classgroup_rejected_list = classgroup_ir_queryset.filter(rejected=True)
-
-            classgroup_invite_serializer = self.retrieve_serializer_class(
-                classgroup_invited_list, many=True
-            )
-            classgroup_request_serializer = self.retrieve_serializer_class(
-                classgroup_requested_list, many=True
-            )
-            classgroup_accepted_serializer = self.retrieve_serializer_class(
-                classgroup_accepted_list, many=True
-            )
-            classgroup_rejected_serializer = self.retrieve_serializer_class(
-                classgroup_rejected_list, many=True
-            )
-
-            return Response(
-                dict(
-                    classgroup=dict(
-                        invites=classgroup_invite_serializer.data,
-                        requests=classgroup_request_serializer.data,
-                        accepted=classgroup_accepted_serializer.data,
-                        rejected=classgroup_rejected_serializer.data,
-                    ),
+                classgroup=dict(
+                    invites=classgroup_invite_serializer.data,
+                    requests=classgroup_request_serializer.data,
+                    accepted=classgroup_accepted_serializer.data,
+                    rejected=classgroup_rejected_serializer.data,
                 ),
-                status=200,
-            )
+            ),
+            status=200,
+        )
 
     @try_except_http_error_decorator
     def list_classroom_members(self, *args, **kwargs):

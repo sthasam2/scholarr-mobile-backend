@@ -1,4 +1,11 @@
-from .settings.settings import AUTH_USER_MODEL, BASE_DIR, DEBUG, TIME_ZONE
+from .settings.settings import (
+    AUTH_USER_MODEL,
+    BASE_DIR,
+    DEBUG,
+    TIME_ZONE,
+    MEDIA_URL,
+    MEDIA_ROOT,
+)
 
 DEVELOPMENT = True
 

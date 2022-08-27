@@ -5,16 +5,16 @@ from apps.class_groups.api.views import ClassGroupMemberViewset, ClassGroupViews
 classgroup_urls = [
     # Classgroup CRUD
     path(
-        "create/",
+        "create",
         ClassGroupViewset.as_view({"post": "post"}),
         name="create-class-group",
     ),  # create
     path(
-        "list/", ClassGroupViewset.as_view({"get": "list"}), name="list-class-groups"
+        "list", ClassGroupViewset.as_view({"get": "list"}), name="list-class-groups"
     ),  # read
     path(
-        "self/list/",
-        ClassGroupViewset.as_view({"get": "list"}),
+        "self/list",
+        ClassGroupViewset.as_view({"get": "list_self_classgroups"}),
         name="list-self-class-groups",
     ),  # read list for user
     path(
@@ -67,8 +67,18 @@ classgroup_member_uls = [
         name="delete-invite-or-request",
     ),  # delete membership
     path(
-        "invite_request/list",
+        "invite_request/self/list",
         ClassGroupMemberViewset.as_view({"get": "list_invites_requests"}),
+        name="delete-invite-or-request",
+    ),  # list membership
+    path(
+        "id=<int:classgroup_id>/invite_request/list",
+        ClassGroupMemberViewset.as_view({"get": "list_classgroup_invites_requests"}),
+        name="delete-invite-or-request",
+    ),  # list membership
+    path(
+        "id=<int:classgroup_id>/member/list",
+        ClassGroupMemberViewset.as_view({"get": "list_classgroup_members"}),
         name="delete-invite-or-request",
     ),  # list membership
 ]

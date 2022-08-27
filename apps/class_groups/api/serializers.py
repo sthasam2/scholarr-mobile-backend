@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.class_groups.models import ClassGroup, ClassGroupStudentInviteOrRequest
 from apps.core.decorators import try_except_http_error_decorator
 from apps.core.exceptions import UnknownModelFieldsError
+from apps.users.api.serializers import PublicUserSerializer
 
 #########################
 #   CLASS GROUP
@@ -11,6 +12,8 @@ from apps.core.exceptions import UnknownModelFieldsError
 
 class ClassGroupSerializer(serializers.ModelSerializer):
     """Serializer for Class Group"""
+
+    _created_by = PublicUserSerializer(required=False)
 
     class Meta:
         model = ClassGroup

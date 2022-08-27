@@ -46,6 +46,11 @@ classroom_member_urls = [
         name="list-invite-request",
     ),  # list invite request
     path(
+        "invite_request/self/list",
+        ClassroomUserViewSet.as_view({"get": "list_invites_requests"}),
+        name="list-invite-request",
+    ),  # list invite request
+    path(
         "id=<int:classroom_id>/invite_request/list",
         ClassroomUserViewSet.as_view({"get": "list_classroom_invites_requests"}),
         name="list-classroom-invite-request",
@@ -66,15 +71,15 @@ classroom_member_urls = [
         name="create-request",
     ),  # create request
     path(
-        "invite/id=<int:invite_id>/detail",
+        "invite_request/id=<int:invite_request_id>/detail",
         ClassroomUserViewSet.as_view({"get": "detail_invite_request"}),
-        name="detail-invite",
-    ),  # detail invite
-    path(
-        "request/id=<int:request_id>/detail",
-        ClassroomUserViewSet.as_view({"get": "detail_invite_request"}),
-        name="detail-request",
-    ),  # detail request
+        name="detail-invite-request",
+    ),  # detail invite_request
+    # path(
+    #     "request/id=<int:request_id>/detail",
+    #     ClassroomUserViewSet.as_view({"get": "detail_invite_request"}),
+    #     name="detail-request",
+    # ),  # detail request
     path(
         "invite_request/id=<int:invite_request_id>/accept",
         ClassroomUserViewSet.as_view({"post": "accept_invite_or_request"}),

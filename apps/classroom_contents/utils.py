@@ -1,5 +1,3 @@
-import filetype
-
 from apps.classroom_contents.api.serializers import AttachmentSerializer
 from apps.classroom_contents.models import (
     Classwork,
@@ -20,9 +18,9 @@ from apps.core.exceptions import (
 def check_and_handle_attachments(request, classroom_content_instance):
     """"""
 
-    if request.data.__contains__("attachments"):
+    attachment_list = request.data.getlist("attachments", None)
 
-        attachment_list = request.data.getlist("attachments", None)
+    if attachment_list:
 
         if len(attachment_list) == 0:
             raise MissingFieldsError(
@@ -45,9 +43,11 @@ def check_and_handle_attachments(request, classroom_content_instance):
                 data=dict(attachment=attachment)
             )
 
-            if attachment_serializer.is_valid(raise_exceptions=True):
-                created_attachment = attachment_serializer.create(
-                    type=filetype.guess(attachment),
+            if attachment_serializer.is_valid(raise_exception=True):
+                file_type = attachment.content_type
+
+                created_attachment = attachment_serializer.save(
+                    mime_type=file_type,
                     **attachment_serializer.validated_data,
                 )
 

@@ -4,11 +4,13 @@ from rest_framework.permissions import BasePermission
 from apps.core.helpers import create_400
 from apps.profiles.models import Profile
 from apps.users.models import CustomUser
+from apps.core.decorators import try_except_http_error_decorator
 
 
 class IsAuthenticatedCustom(BasePermission):
     """Custom IsAuthenticated Permission"""
 
+    @try_except_http_error_decorator
     def has_permission(self, request, view):
 
         is_authenticated = bool(request.user and request.user.is_authenticated)
